@@ -1,583 +1,1536 @@
 <!doctype html>
 <html lang="uk">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AI для QA: азбука</title>
-<style>
-:root{
-  --bg:#0f1115; --bg2:#161a22; --card:#1c212b; --line:#2a3140;
-  --text:#e9ecf2; --muted:#9aa3b5; --accent:#e07a4f; --accent2:#6fa8ff;
-  --green:#4fc38a; --red:#ef6464; --yellow:#e8c25a; --purple:#b48cff;
-  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-}
-:root[data-theme="light"]{
-  --bg:#f6f4ef; --bg2:#ece8df; --card:#ffffff; --line:#ddd6c8;
-  --text:#1d1f24; --muted:#5f6573; --accent:#c75a2c; --accent2:#2d6fd6;
-  --green:#1f9a5f; --red:#c93a3a; --yellow:#a77d0b; --purple:#7a4ed6;
-}
-*{box-sizing:border-box}
-html,body{margin:0;height:100%}
-body{background:var(--bg);color:var(--text);font:17px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden}
-.deck{height:100%;position:relative}
-.slide{position:absolute;inset:0;padding:56px 72px 90px;display:flex;flex-direction:column;justify-content:center;
-  opacity:0;transform:translateX(40px);pointer-events:none;transition:opacity .35s,transform .35s;overflow-y:auto}
-.slide.active{opacity:1;transform:none;pointer-events:auto}
-.slide.prev{transform:translateX(-40px)}
-.inner{max-width:1080px;width:100%;margin:0 auto}
-h1{font-size:clamp(34px,5vw,58px);line-height:1.1;margin:0 0 18px;letter-spacing:-.02em}
-h2{font-size:clamp(26px,3.4vw,40px);margin:0 0 6px;letter-spacing:-.01em}
-.kicker{color:var(--accent);font:600 13px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px}
-.lead{color:var(--muted);font-size:19px;margin:0 0 26px;max-width:820px}
-p{margin:.4em 0}
-code,.mono{font-family:var(--mono);font-size:.92em}
-code{background:var(--bg2);border:1px solid var(--line);padding:1px 6px;border-radius:5px}
-.grid{display:grid;gap:16px}
-.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
-.card h3{margin:0 0 6px;font-size:18px}
-.card p{color:var(--muted);margin:0;font-size:15.5px}
-.tip{border-left:4px solid var(--accent);background:var(--bg2);padding:12px 16px;border-radius:0 10px 10px 0;margin-top:20px;font-size:15.5px}
-.tip b{color:var(--accent)}
-.pill{display:inline-block;padding:3px 10px;border-radius:99px;border:1px solid var(--line);font:600 12px/1.6 var(--mono);color:var(--muted)}
-button{font:inherit;cursor:pointer}
-.btn{background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:8px 14px;font-size:15px;transition:.15s}
-.btn:hover{border-color:var(--accent)}
-.btn.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI для QA: база</title>
+    <style>
+      :root {
+        --bg: #0f1115;
+        --bg2: #161a22;
+        --card: #1c212b;
+        --line: #2a3140;
+        --text: #e9ecf2;
+        --muted: #9aa3b5;
+        --accent: #e07a4f;
+        --accent2: #6fa8ff;
+        --green: #4fc38a;
+        --red: #ef6464;
+        --yellow: #e8c25a;
+        --purple: #b48cff;
+        --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+      :root[data-theme='light'] {
+        --bg: #f6f4ef;
+        --bg2: #ece8df;
+        --card: #ffffff;
+        --line: #ddd6c8;
+        --text: #1d1f24;
+        --muted: #5f6573;
+        --accent: #c75a2c;
+        --accent2: #2d6fd6;
+        --green: #1f9a5f;
+        --red: #c93a3a;
+        --yellow: #a77d0b;
+        --purple: #7a4ed6;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font:
+          17px/1.55 system-ui,
+          -apple-system,
+          'Segoe UI',
+          Roboto,
+          sans-serif;
+        overflow: hidden;
+      }
+      .deck {
+        height: 100%;
+        position: relative;
+      }
+      .slide {
+        position: absolute;
+        inset: 0;
+        padding: 56px 72px 90px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        opacity: 0;
+        transform: translateX(40px);
+        pointer-events: none;
+        transition:
+          opacity 0.35s,
+          transform 0.35s;
+        overflow-y: auto;
+      }
+      .slide.active {
+        opacity: 1;
+        transform: none;
+        pointer-events: auto;
+      }
+      .slide.prev {
+        transform: translateX(-40px);
+      }
+      .inner {
+        max-width: 1080px;
+        width: 100%;
+        margin: 0 auto;
+      }
+      h1 {
+        font-size: clamp(34px, 5vw, 58px);
+        line-height: 1.1;
+        margin: 0 0 18px;
+        letter-spacing: -0.02em;
+      }
+      h2 {
+        font-size: clamp(26px, 3.4vw, 40px);
+        margin: 0 0 6px;
+        letter-spacing: -0.01em;
+      }
+      .kicker {
+        color: var(--accent);
+        font: 600 13px/1 var(--mono);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+      }
+      .lead {
+        color: var(--muted);
+        font-size: 19px;
+        margin: 0 0 26px;
+        max-width: 820px;
+      }
+      p {
+        margin: 0.4em 0;
+      }
+      code,
+      .mono {
+        font-family: var(--mono);
+        font-size: 0.92em;
+      }
+      code {
+        background: var(--bg2);
+        border: 1px solid var(--line);
+        padding: 1px 6px;
+        border-radius: 5px;
+      }
+      .grid {
+        display: grid;
+        gap: 16px;
+      }
+      .g2 {
+        grid-template-columns: 1fr 1fr;
+      }
+      .g3 {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .g4 {
+        grid-template-columns: repeat(4, 1fr);
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 18px 20px;
+      }
+      .card h3 {
+        margin: 0 0 6px;
+        font-size: 18px;
+      }
+      .card p {
+        color: var(--muted);
+        margin: 0;
+        font-size: 15.5px;
+      }
+      .tip {
+        border-left: 4px solid var(--accent);
+        background: var(--bg2);
+        padding: 12px 16px;
+        border-radius: 0 10px 10px 0;
+        margin-top: 20px;
+        font-size: 15.5px;
+      }
+      .tip b {
+        color: var(--accent);
+      }
+      .pill {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 99px;
+        border: 1px solid var(--line);
+        font: 600 12px/1.6 var(--mono);
+        color: var(--muted);
+      }
+      button {
+        font: inherit;
+        cursor: pointer;
+      }
+      .btn {
+        background: var(--card);
+        color: var(--text);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 8px 14px;
+        font-size: 15px;
+        transition: 0.15s;
+      }
+      .btn:hover {
+        border-color: var(--accent);
+      }
+      .btn.on {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+      }
 
-/* title */
-.hero-tags{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}
-.hero-tags span{font:600 14px var(--mono);padding:8px 14px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+      /* title */
+      .hero-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 28px;
+      }
+      .hero-tags span {
+        font: 600 14px var(--mono);
+        padding: 8px 14px;
+        border-radius: 10px;
+        background: var(--card);
+        border: 1px solid var(--line);
+      }
 
-/* map */
-.map .card{cursor:pointer;transition:.15s}
-.map .card:hover{border-color:var(--accent);transform:translateY(-2px)}
-.map .emo{font-size:26px}
+      /* map */
+      .map .card {
+        cursor: pointer;
+        transition: 0.15s;
+      }
+      .map .card:hover {
+        border-color: var(--accent);
+        transform: translateY(-2px);
+      }
+      .map .emo {
+        font-size: 26px;
+      }
 
-/* tokens */
-textarea{width:100%;min-height:92px;background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font:16px/1.5 system-ui,sans-serif;resize:vertical}
-.toks{margin-top:14px;line-height:2.1;min-height:60px}
-.tok{padding:3px 2px;border-radius:4px;margin-right:1px;font-family:var(--mono);font-size:14.5px;white-space:pre}
-.stats{display:flex;gap:16px;margin-top:10px;flex-wrap:wrap}
-.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 16px}
-.stat b{font-size:24px;display:block;font-family:var(--mono)}
-.stat span{color:var(--muted);font-size:13px}
+      /* tokens */
+      textarea {
+        width: 100%;
+        min-height: 92px;
+        background: var(--card);
+        color: var(--text);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 14px;
+        font:
+          16px/1.5 system-ui,
+          sans-serif;
+        resize: vertical;
+      }
+      .toks {
+        margin-top: 14px;
+        line-height: 2.1;
+        min-height: 60px;
+      }
+      .tok {
+        padding: 3px 2px;
+        border-radius: 4px;
+        margin-right: 1px;
+        font-family: var(--mono);
+        font-size: 14.5px;
+        white-space: pre;
+      }
+      .stats {
+        display: flex;
+        gap: 16px;
+        margin-top: 10px;
+        flex-wrap: wrap;
+      }
+      .stat {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 10px 16px;
+      }
+      .stat b {
+        font-size: 24px;
+        display: block;
+        font-family: var(--mono);
+      }
+      .stat span {
+        color: var(--muted);
+        font-size: 13px;
+      }
 
-/* context */
-.ctx-wrap{display:grid;grid-template-columns:1.1fr 1fr;gap:26px;align-items:start}
-.bar{height:44px;border-radius:12px;background:var(--card);border:1px solid var(--line);display:flex;overflow:hidden;position:relative}
-.seg{height:100%;transition:width .35s;display:flex;align-items:center;justify-content:center;font:600 11px var(--mono);color:#111;white-space:nowrap;overflow:hidden}
-.ctx-items{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
-.ctx-msg{margin-top:14px;min-height:48px;font-size:15.5px}
-.warn{color:var(--red);font-weight:600}
+      /* context */
+      .ctx-wrap {
+        display: grid;
+        grid-template-columns: 1.1fr 1fr;
+        gap: 26px;
+        align-items: start;
+      }
+      .bar {
+        height: 44px;
+        border-radius: 12px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        display: flex;
+        overflow: hidden;
+        position: relative;
+      }
+      .seg {
+        height: 100%;
+        transition: width 0.35s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font: 600 11px var(--mono);
+        color: #111;
+        white-space: nowrap;
+        overflow: hidden;
+      }
+      .ctx-items {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 14px;
+      }
+      .ctx-msg {
+        margin-top: 14px;
+        min-height: 48px;
+        font-size: 15.5px;
+      }
+      .warn {
+        color: var(--red);
+        font-weight: 600;
+      }
 
-/* prompt compare */
-.cmp .card{position:relative}
-.cmp .bad{border-color:color-mix(in srgb,var(--red) 50%,var(--line))}
-.cmp .good{border-color:color-mix(in srgb,var(--green) 50%,var(--line))}
-.cmp pre{white-space:pre-wrap;font:14.5px/1.55 var(--mono);margin:10px 0 0;color:var(--text)}
-.label{font:700 12px var(--mono);letter-spacing:.08em}
-.bad .label{color:var(--red)}.good .label{color:var(--green)}
+      /* prompt compare */
+      .cmp .card {
+        position: relative;
+      }
+      .cmp .bad {
+        border-color: color-mix(in srgb, var(--red) 50%, var(--line));
+      }
+      .cmp .good {
+        border-color: color-mix(in srgb, var(--green) 50%, var(--line));
+      }
+      .cmp pre {
+        white-space: pre-wrap;
+        font: 14.5px/1.55 var(--mono);
+        margin: 10px 0 0;
+        color: var(--text);
+      }
+      .label {
+        font: 700 12px var(--mono);
+        letter-spacing: 0.08em;
+      }
+      .bad .label {
+        color: var(--red);
+      }
+      .good .label {
+        color: var(--green);
+      }
 
-/* terminal */
-.term{background:#0b0d10;border:1px solid #2a3140;border-radius:12px;overflow:hidden;font:14.5px/1.6 var(--mono);color:#d7dde8}
-.term .top{display:flex;gap:7px;padding:10px 12px;background:#161a22}
-.term .top i{width:11px;height:11px;border-radius:50%;background:#555;display:block}
-.term .top i:nth-child(1){background:#ef6464}.term .top i:nth-child(2){background:#e8c25a}.term .top i:nth-child(3){background:#4fc38a}
-.term .body{padding:14px 18px;min-height:250px;white-space:pre-wrap}
-.term .p{color:#e07a4f}.term .d{color:#8a93a6}.term .ok{color:#4fc38a}.term .c{color:#6fa8ff}
-.cmds{display:flex;flex-direction:column;gap:8px}
-.cmds .btn{text-align:left;font-family:var(--mono);font-size:14px}
-.cmds .btn small{display:block;font-family:system-ui;color:var(--muted);font-size:12.5px}
+      /* terminal */
+      .term {
+        background: #0b0d10;
+        border: 1px solid #2a3140;
+        border-radius: 12px;
+        overflow: hidden;
+        font: 14.5px/1.6 var(--mono);
+        color: #d7dde8;
+      }
+      .term .top {
+        display: flex;
+        gap: 7px;
+        padding: 10px 12px;
+        background: #161a22;
+      }
+      .term .top i {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        background: #555;
+        display: block;
+      }
+      .term .top i:nth-child(1) {
+        background: #ef6464;
+      }
+      .term .top i:nth-child(2) {
+        background: #e8c25a;
+      }
+      .term .top i:nth-child(3) {
+        background: #4fc38a;
+      }
+      .term .body {
+        padding: 14px 18px;
+        min-height: 250px;
+        white-space: pre-wrap;
+      }
+      .term .p {
+        color: #e07a4f;
+      }
+      .term .d {
+        color: #8a93a6;
+      }
+      .term .ok {
+        color: #4fc38a;
+      }
+      .term .c {
+        color: #6fa8ff;
+      }
+      .cmds {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .cmds .btn {
+        text-align: left;
+        font-family: var(--mono);
+        font-size: 14px;
+      }
+      .cmds .btn small {
+        display: block;
+        font-family: system-ui;
+        color: var(--muted);
+        font-size: 12.5px;
+      }
 
-/* agent loop */
-.loop{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin:10px 0 18px}
-.step{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:14px 16px;width:180px;text-align:center;transition:.25s}
-.step b{display:block;font-size:15px}
-.step span{color:var(--muted);font-size:13px}
-.step.lit{border-color:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 22%,transparent);transform:translateY(-3px)}
-.arrow{color:var(--muted);font-size:22px}
-.log{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;font:14px/1.6 var(--mono);min-height:120px}
+      /* agent loop */
+      .loop {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin: 10px 0 18px;
+      }
+      .step {
+        background: var(--card);
+        border: 2px solid var(--line);
+        border-radius: 14px;
+        padding: 14px 16px;
+        width: 180px;
+        text-align: center;
+        transition: 0.25s;
+      }
+      .step b {
+        display: block;
+        font-size: 15px;
+      }
+      .step span {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .step.lit {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 22%, transparent);
+        transform: translateY(-3px);
+      }
+      .arrow {
+        color: var(--muted);
+        font-size: 22px;
+      }
+      .log {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 16px;
+        font: 14px/1.6 var(--mono);
+        min-height: 120px;
+      }
 
-/* mcp */
-.mcp{display:grid;grid-template-columns:1fr 160px 1fr;gap:18px;align-items:center}
-.hub{background:var(--accent);color:#fff;border-radius:16px;padding:22px 16px;text-align:center;font-weight:700}
-.hub small{display:block;font-weight:400;opacity:.85;font-size:12.5px;margin-top:4px}
-.servers{display:flex;flex-direction:column;gap:10px}
-.srv{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer;transition:.15s;text-align:left;color:var(--text)}
-.srv:hover,.srv.on{border-color:var(--accent2)}
-.srv b{display:block}.srv span{color:var(--muted);font-size:13px}
-.mcp-out{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;min-height:200px;font-size:15px}
-.mcp-out pre{font:13.5px/1.55 var(--mono);white-space:pre-wrap;margin:8px 0 0;color:var(--muted)}
+      /* mcp */
+      .mcp {
+        display: grid;
+        grid-template-columns: 1fr 160px 1fr;
+        gap: 18px;
+        align-items: center;
+      }
+      .hub {
+        background: var(--accent);
+        color: #fff;
+        border-radius: 16px;
+        padding: 22px 16px;
+        text-align: center;
+        font-weight: 700;
+      }
+      .hub small {
+        display: block;
+        font-weight: 400;
+        opacity: 0.85;
+        font-size: 12.5px;
+        margin-top: 4px;
+      }
+      .servers {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .srv {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 14px;
+        cursor: pointer;
+        transition: 0.15s;
+        text-align: left;
+        color: var(--text);
+      }
+      .srv:hover,
+      .srv.on {
+        border-color: var(--accent2);
+      }
+      .srv b {
+        display: block;
+      }
+      .srv span {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .mcp-out {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 14px 16px;
+        min-height: 200px;
+        font-size: 15px;
+      }
+      .mcp-out pre {
+        font: 13.5px/1.55 var(--mono);
+        white-space: pre-wrap;
+        margin: 8px 0 0;
+        color: var(--muted);
+      }
 
-/* skill */
-.tree{font:14px/1.8 var(--mono);white-space:nowrap;overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 18px}
-.tree .f{cursor:pointer;border-radius:5px;padding:1px 6px}
-.tree .f:hover,.tree .f.on{background:color-mix(in srgb,var(--accent2) 22%,transparent)}
-.file{background:#0b0d10;color:#d7dde8;border:1px solid #2a3140;border-radius:12px;padding:14px 18px;font:13.5px/1.6 var(--mono);white-space:pre-wrap;min-height:260px}
-.file .k{color:#e07a4f}.file .h{color:#6fa8ff}.file .m{color:#8a93a6}
+      /* skill */
+      .tree {
+        font: 14px/1.8 var(--mono);
+        white-space: nowrap;
+        overflow-x: auto;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 14px 18px;
+      }
+      .tree .f {
+        cursor: pointer;
+        border-radius: 5px;
+        padding: 1px 6px;
+      }
+      .tree .f:hover,
+      .tree .f.on {
+        background: color-mix(in srgb, var(--accent2) 22%, transparent);
+      }
+      .file {
+        background: #0b0d10;
+        color: #d7dde8;
+        border: 1px solid #2a3140;
+        border-radius: 12px;
+        padding: 14px 18px;
+        font: 13.5px/1.6 var(--mono);
+        white-space: pre-wrap;
+        min-height: 260px;
+      }
+      .file .k {
+        color: #e07a4f;
+      }
+      .file .h {
+        color: #6fa8ff;
+      }
+      .file .m {
+        color: #8a93a6;
+      }
 
-/* flip cards */
-.flip{perspective:900px;height:150px;cursor:pointer}
-.flip .in{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d}
-.flip.on .in{transform:rotateY(180deg)}
-.flip .fc,.flip .bc{position:absolute;inset:0;backface-visibility:hidden;border-radius:14px;border:1px solid var(--line);padding:16px;display:flex;flex-direction:column;justify-content:center}
-.flip .fc{background:var(--card)}
-.flip .fc b{font-size:17px}.flip .fc span{color:var(--muted);font-size:13px;margin-top:6px}
-.flip .bc{background:var(--bg2);transform:rotateY(180deg);font-size:14.5px}
+      /* flip cards */
+      .flip {
+        perspective: 900px;
+        height: 150px;
+        cursor: pointer;
+      }
+      .flip .in {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        transition: transform 0.5s;
+        transform-style: preserve-3d;
+      }
+      .flip.on .in {
+        transform: rotateY(180deg);
+      }
+      .flip .fc,
+      .flip .bc {
+        position: absolute;
+        inset: 0;
+        backface-visibility: hidden;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .flip .fc {
+        background: var(--card);
+      }
+      .flip .fc b {
+        font-size: 17px;
+      }
+      .flip .fc span {
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 6px;
+      }
+      .flip .bc {
+        background: var(--bg2);
+        transform: rotateY(180deg);
+        font-size: 14.5px;
+      }
 
-/* quiz */
-.q{margin-bottom:18px}
-.q .opts{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
-.q .btn.right{background:var(--green);border-color:var(--green);color:#fff}
-.q .btn.wrong{background:var(--red);border-color:var(--red);color:#fff}
-.q .why{color:var(--muted);font-size:14.5px;margin-top:6px;min-height:1.3em}
-.score{font:700 20px var(--mono);color:var(--accent)}
+      /* quiz */
+      .q {
+        margin-bottom: 18px;
+      }
+      .q .opts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 8px;
+      }
+      .q .btn.right {
+        background: var(--green);
+        border-color: var(--green);
+        color: #fff;
+      }
+      .q .btn.wrong {
+        background: var(--red);
+        border-color: var(--red);
+        color: #fff;
+      }
+      .q .why {
+        color: var(--muted);
+        font-size: 14.5px;
+        margin-top: 6px;
+        min-height: 1.3em;
+      }
+      .score {
+        font: 700 20px var(--mono);
+        color: var(--accent);
+      }
 
-/* cheat sheet */
-table{width:100%;border-collapse:collapse;font-size:15px}
-td,th{padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
-th{color:var(--muted);font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:.06em}
-td:first-child{font-weight:700;white-space:nowrap}
+      /* cheat sheet */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 15px;
+      }
+      td,
+      th {
+        padding: 9px 12px;
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+        vertical-align: top;
+      }
+      th {
+        color: var(--muted);
+        font-weight: 600;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      td:first-child {
+        font-weight: 700;
+        white-space: nowrap;
+      }
 
-/* nav */
-.nav{position:fixed;left:0;right:0;bottom:0;display:flex;align-items:center;gap:14px;padding:12px 24px;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(6px);border-top:1px solid var(--line);z-index:5}
-.progress{flex:1;height:5px;background:var(--line);border-radius:5px;overflow:hidden}
-.progress i{display:block;height:100%;background:var(--accent);transition:width .3s}
-.count{font:600 13px var(--mono);color:var(--muted);min-width:56px;text-align:center}
-.nav .btn{padding:6px 12px}
+      /* nav */
+      .nav {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 12px 24px;
+        background: color-mix(in srgb, var(--bg) 88%, transparent);
+        backdrop-filter: blur(6px);
+        border-top: 1px solid var(--line);
+        z-index: 5;
+      }
+      .progress {
+        flex: 1;
+        height: 5px;
+        background: var(--line);
+        border-radius: 5px;
+        overflow: hidden;
+      }
+      .progress i {
+        display: block;
+        height: 100%;
+        background: var(--accent);
+        transition: width 0.3s;
+      }
+      .count {
+        font: 600 13px var(--mono);
+        color: var(--muted);
+        min-width: 56px;
+        text-align: center;
+      }
+      .nav .btn {
+        padding: 6px 12px;
+      }
 
-@media (max-width:820px){
-  body{overflow:auto}
-  .slide{padding:28px 16px 90px;justify-content:flex-start}
-  .g2,.g3,.g4,.ctx-wrap,.mcp{grid-template-columns:1fr}
-  .arrow{display:none}
-  .step{width:46%}
-}
-</style>
-</head>
-<body>
-<div class="deck" id="deck">
+      @media (max-width: 820px) {
+        body {
+          overflow: auto;
+        }
+        .slide {
+          padding: 28px 16px 90px;
+          justify-content: flex-start;
+        }
+        .g2,
+        .g3,
+        .g4,
+        .ctx-wrap,
+        .mcp {
+          grid-template-columns: 1fr;
+        }
+        .arrow {
+          display: none;
+        }
+        .step {
+          width: 46%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="deck" id="deck">
+      <!-- 1 -->
+      <section class="slide">
+        <div class="inner">
+          <div class="kicker">Лекція для QA · частина 1</div>
+          <h1>Азбука AI:<br />що відбувається «під капотом»</h1>
+          <p class="lead">
+            Базові поняття, без яких складно правильно працювати з
+            AI-інструментами. Пояснюємо на прикладі <b>Claude Code</b> і
+            щоденних задач тестувальника.
+          </p>
+          <div class="hero-tags">
+            <span>Модель</span><span>Токен</span><span>Контекст</span
+            ><span>Промпт</span><span>CLI</span><span>Агент</span
+            ><span>MCP</span><span>Скіл</span><span>CLAUDE.md</span>
+          </div>
+          <p style="margin-top: 34px; color: var(--muted); font-size: 14px">
+            Гортайте стрілками ← → або пробілом. Більшість слайдів можна
+            «потикати».
+          </p>
+        </div>
+      </section>
 
-<!-- 1 -->
-<section class="slide">
-<div class="inner">
-  <div class="kicker">Лекція для QA · частина 1</div>
-  <h1>Азбука AI:<br>що відбувається «під капотом»</h1>
-  <p class="lead">Базові поняття, без яких складно правильно працювати з AI-інструментами. Пояснюємо на прикладі <b>Claude Code</b> і щоденних задач тестувальника.</p>
-  <div class="hero-tags">
-    <span>Модель</span><span>Токен</span><span>Контекст</span><span>Промпт</span><span>CLI</span><span>Агент</span><span>MCP</span><span>Скіл</span><span>CLAUDE.md</span>
-  </div>
-  <p style="margin-top:34px;color:var(--muted);font-size:14px">Гортайте стрілками ← → або пробілом. Більшість слайдів можна «потикати».</p>
-</div>
-</section>
+      <!-- 2 map -->
+      <section class="slide">
+        <div class="inner">
+          <div class="kicker">Карта</div>
+          <h2>Як усе пов'язано</h2>
+          <p class="lead">
+            Модель «думає» токенами в межах контексту. Claude Code (CLI) робить
+            з моделі агента, що має інструменти. MCP додає зовнішні системи,
+            скіли дають готові інструкції. Натисніть на поняття, щоб перейти до
+            слайду.
+          </p>
+          <div class="grid g4 map">
+            <div class="card" data-go="3">
+              <div class="emo">🧠</div>
+              <h3>Модель</h3>
+              <p>Мозок, що передбачає текст</p>
+            </div>
+            <div class="card" data-go="4">
+              <div class="emo">🧩</div>
+              <h3>Токен</h3>
+              <p>Одиниця тексту і оплати</p>
+            </div>
+            <div class="card" data-go="5">
+              <div class="emo">🪟</div>
+              <h3>Контекст</h3>
+              <p>Робоча пам'ять моделі</p>
+            </div>
+            <div class="card" data-go="6">
+              <div class="emo">✍️</div>
+              <h3>Промпт</h3>
+              <p>Ваше завдання для моделі</p>
+            </div>
+            <div class="card" data-go="7">
+              <div class="emo">⌨️</div>
+              <h3>CLI</h3>
+              <p>Claude Code у терміналі</p>
+            </div>
+            <div class="card" data-go="8">
+              <div class="emo">🔁</div>
+              <h3>Агент</h3>
+              <p>Модель + інструменти + цикл</p>
+            </div>
+            <div class="card" data-go="9">
+              <div class="emo">🔌</div>
+              <h3>MCP</h3>
+              <p>«USB-C» до ваших систем</p>
+            </div>
+            <div class="card" data-go="10">
+              <div class="emo">📘</div>
+              <h3>Скіл</h3>
+              <p>Готовий рецепт задачі</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
-<!-- 2 map -->
-<section class="slide">
-<div class="inner">
-  <div class="kicker">Карта</div>
-  <h2>Як усе пов'язано</h2>
-  <p class="lead">Модель «думає» токенами в межах контексту. Claude Code (CLI) робить з моделі агента, що має інструменти. MCP додає зовнішні системи, скіли дають готові інструкції. Натисніть на поняття, щоб перейти до слайду.</p>
-  <div class="grid g4 map">
-    <div class="card" data-go="3"><div class="emo">🧠</div><h3>Модель</h3><p>Мозок, що передбачає текст</p></div>
-    <div class="card" data-go="4"><div class="emo">🧩</div><h3>Токен</h3><p>Одиниця тексту і оплати</p></div>
-    <div class="card" data-go="5"><div class="emo">🪟</div><h3>Контекст</h3><p>Робоча пам'ять моделі</p></div>
-    <div class="card" data-go="6"><div class="emo">✍️</div><h3>Промпт</h3><p>Ваше завдання для моделі</p></div>
-    <div class="card" data-go="7"><div class="emo">⌨️</div><h3>CLI</h3><p>Claude Code у терміналі</p></div>
-    <div class="card" data-go="8"><div class="emo">🔁</div><h3>Агент</h3><p>Модель + інструменти + цикл</p></div>
-    <div class="card" data-go="9"><div class="emo">🔌</div><h3>MCP</h3><p>«USB-C» до ваших систем</p></div>
-    <div class="card" data-go="10"><div class="emo">📘</div><h3>Скіл</h3><p>Готовий рецепт задачі</p></div>
-  </div>
-</div>
-</section>
+      <!-- 3 model -->
+      <section class="slide">
+        <div class="inner">
+          <div class="kicker">01 · Модель</div>
+          <h2>Модель (LLM): дуже начитаний передбачувач тексту</h2>
+          <p class="lead">
+            Велика мовна модель вчилась на величезному обсязі текстів і коду.
+            Вона не «знає» правду, а передбачає найімовірніше продовження. Тому
+            відповідає впевнено навіть тоді, коли помиляється.
+          </p>
+          <div class="grid g3">
+            <div class="card">
+              <h3>🚀 Opus</h3>
+              <p>
+                Найсильніша: складна логіка, архітектура тестів, розбір
+                неочевидних багів. Повільніша і дорожча.
+              </p>
+            </div>
+            <div class="card">
+              <h3>⚖️ Sonnet</h3>
+              <p>
+                Баланс швидкості та якості. Хороший вибір для щоденних задач:
+                тест-кейси, автотести, рев'ю.
+              </p>
+            </div>
+            <div class="card">
+              <h3>⚡ Haiku</h3>
+              <p>
+                Швидка і дешева. Підходить для простих перетворень:
+                форматування, класифікація, короткі підсумки.
+              </p>
+            </div>
+          </div>
+          <div class="tip">
+            <b>Для QA:</b> модель може вигадати метод API, локатор або поведінку
+            системи («галюцинація»). Ставтеся до її відповіді як до коду від
+            нового колеги: перевіряйте, запускайте, вимагайте доказів. У Claude
+            Code модель перемикається командою <code>/model</code>.
+          </div>
+        </div>
+      </section>
 
-<!-- 3 model -->
-<section class="slide">
-<div class="inner">
-  <div class="kicker">01 · Модель</div>
-  <h2>Модель (LLM): дуже начитаний передбачувач тексту</h2>
-  <p class="lead">Велика мовна модель вчилась на величезному обсязі текстів і коду. Вона не «знає» правду, а передбачає найімовірніше продовження. Тому відповідає впевнено навіть тоді, коли помиляється.</p>
-  <div class="grid g3">
-    <div class="card"><h3>🚀 Opus</h3><p>Найсильніша: складна логіка, архітектура тестів, розбір неочевидних багів. Повільніша і дорожча.</p></div>
-    <div class="card"><h3>⚖️ Sonnet</h3><p>Баланс швидкості та якості. Хороший вибір для щоденних задач: тест-кейси, автотести, рев'ю.</p></div>
-    <div class="card"><h3>⚡ Haiku</h3><p>Швидка і дешева. Підходить для простих перетворень: форматування, класифікація, короткі підсумки.</p></div>
-  </div>
-  <div class="tip"><b>Для QA:</b> модель може вигадати метод API, локатор або поведінку системи («галюцинація»). Ставтеся до її відповіді як до коду від нового колеги: перевіряйте, запускайте, вимагайте доказів. У Claude Code модель перемикається командою <code>/model</code>.</div>
-</div>
-</section>
+      <!-- 4 tokens -->
+      <section class="slide">
+        <div class="inner">
+          <div class="kicker">02 · Токен</div>
+          <h2>Токен: шматочок тексту, яким «мислить» модель</h2>
+          <p class="lead">
+            Модель бачить не літери і не слова, а токени: частини слів, знаки,
+            пробіли. Ліміти контексту і ціна рахуються саме в токенах. Спробуйте
+            написати щось нижче.
+          </p>
+          <textarea id="tokIn">
+Перевірити, що кнопка "Submit" неактивна, поки поле email порожнє.</textarea
+          >
+          <div class="toks" id="tokOut"></div>
+          <div class="stats">
+            <div class="stat"><b id="sChars">0</b><span>символів</span></div>
+            <div class="stat"><b id="sWords">0</b><span>слів</span></div>
+            <div class="stat">
+              <b id="sToks">0</b><span>токенів (приблизно)</span>
+            </div>
+          </div>
+          <div class="tip">
+            <b>Важливо:</b> це спрощена ілюстрація, справжній токенізатор ділить
+            інакше. Але тенденція правдива: українська «коштує» більше токенів,
+            ніж англійська, а великі логи і HTML-сторінки з'їдають їх тисячами.
+          </div>
+        </div>
+      </section>
 
-<!-- 4 tokens -->
-<section class="slide">
-<div class="inner">
-  <div class="kicker">02 · Токен</div>
-  <h2>Токен: шматочок тексту, яким «мислить» модель</h2>
-  <p class="lead">Модель бачить не літери і не слова, а токени: частини слів, знаки, пробіли. Ліміти контексту і ціна рахуються саме в токенах. Спробуйте написати щось нижче.</p>
-  <textarea id="tokIn">Перевірити, що кнопка "Submit" неактивна, поки поле email порожнє.</textarea>
-  <div class="toks" id="tokOut"></div>
-  <div class="stats">
-    <div class="stat"><b id="sChars">0</b><span>символів</span></div>
-    <div class="stat"><b id="sWords">0</b><span>слів</span></div>
-    <div class="stat"><b id="sToks">0</b><span>токенів (приблизно)</span></div>
-  </div>
-  <div class="tip"><b>Важливо:</b> це спрощена ілюстрація, справжній токенізатор ділить інакше. Але тенденція правдива: українська «коштує» більше токенів, ніж англійська, а великі логи і HTML-сторінки з'їдають їх тисячами.</div>
-</div>
-</section>
+      <!-- 5 context -->
+      <section class="slide">
+        <div class="inner">
+          <div class="kicker">03 · Контекст</div>
+          <h2>Контекстне вікно: робоча пам'ять сесії</h2>
+          <p class="lead">
+            Усе, що модель «бачить» у розмові, лежить у контексті: системні
+            інструкції, ваші повідомлення, відкриті файли, результати команд.
+            Вікно велике (сотні тисяч токенів), але не безмежне.
+          </p>
+          <div class="ctx-wrap">
+            <div>
+              <div class="bar" id="ctxBar"></div>
+              <div class="ctx-items" id="ctxBtns"></div>
+              <div class="ctx-msg" id="ctxMsg">
+                Додайте в контекст те, що зазвичай потрапляє в сесію Claude
+                Code.
+              </div>
+              <div style="display: flex; gap: 8px; margin-top: 6px">
+                <button class="btn" id="ctxCompact">/compact</button>
+                <button class="btn" id="ctxClear">/clear</button>
+              </div>
+            </div>
+            <div class="grid" style="gap: 12px">
+              <div class="card">
+                <h3>Чим більше сміття, тим гірше</h3>
+                <p>
+                  Коли контекст переповнений нерелевантним, модель частіше
+                  губить деталі з початку розмови.
+                </p>
+              </div>
+              <div class="card">
+                <h3><code>/compact</code></h3>
+                <p>
+                  Стискає історію до короткого підсумку і звільняє місце. Деталі
+                  можуть загубитись.
+                </p>
+              </div>
+              <div class="card">
+                <h3><code>/clear</code></h3>
+                <p>
+                  Нова задача, значить нова сесія. Найпростіший спосіб уникнути
+                  плутанини між задачами.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-<!-- 5 context -->
-<section class="slide">
-<div class="inner">
-  <div class="kicker">03 · Контекст</div>
-  <h2>Контекстне вікно: робоча пам'ять сесії</h2>
-  <p class="lead">Усе, що модель «бачить» у розмові, лежить у контексті: системні інструкції, ваші повідомлення, відкриті файли, результати команд. Вікно велике (сотні тисяч токенів), але не безмежне.</p>
-  <div class="ctx-wrap">
-    <div>
-      <div class="bar" id="ctxBar"></div>
-      <div class="ctx-items" id="ctxBtns"></div>
-      <div class="ctx-msg" id="ctxMsg">Додайте в контекст те, що зазвичай потрапляє в сесію Claude Code.</div>
-      <div style="display:flex;gap:8px;margin-top:6px">
-        <button class="btn" id="ctxCompact">/compact</button>
-        <button class="btn" id="ctxClear">/clear</button>
-      </div>
-    </div>
-    <div class="grid" style="gap:12px">
-      <div class="card"><h3>Чим більше сміття, тим гірше</h3><p>Коли контекст переповнений нерелевантним, модель частіше губить деталі з початку розмови.</p></div>
-      <div class="card"><h3><code>/compact</code></h3><p>Стискає історію до короткого підсумку і звільняє місце. Деталі можуть загубитись.</p></div>
-      <div class="card"><h3><code>/clear</code></h3><p>Нова задача, значить нова сесія. Найпростіший спосіб уникнути плутанини між задачами.</p></div>
-    </div>
-  </div>
-</div>
-</section>
-
-<!-- 6 prompt -->
-<section class="slide">
-<div class="inner">
-  <div class="kicker">04 · Промпт</div>
-  <h2>Промпт: якість відповіді = якість завдання</h2>
-  <p class="lead">Модель не знає вашого продукту, вимог і домовленостей команди, поки ви їх не дасте. Порівняйте:</p>
-  <div class="grid g2 cmp">
-    <div class="card bad"><div class="label">✗ РОЗМИТО</div><pre>Напиши тести для логіну.</pre>
-      <p style="margin-top:12px">Результат: загальні кейси «з інтернету», невідомий фреймворк, вигадані локатори.</p></div>
-    <div class="card good"><div class="label">✓ КОНКРЕТНО</div><pre>Ось user story #1234 і критерії приймання.
+      <!-- 6 prompt -->
+      <section class="slide">
+        <div class="inner">
+          <div class="kicker">04 · Промпт</div>
+          <h2>Промпт: якість відповіді = якість завдання</h2>
+          <p class="lead">
+            Модель не знає вашого продукту, вимог і домовленостей команди, поки
+            ви їх не дасте. Порівняйте:
+          </p>
+          <div class="grid g2 cmp">
+            <div class="card bad">
+              <div class="label">✗ РОЗМИТО</div>
+              <pre>Напиши тести для логіну.</pre>
+              <p style="margin-top: 12px">
+                Результат: загальні кейси «з інтернету», невідомий фреймворк,
+                вигадані локатори.
+              </p>
+            </div>
+            <div class="card good">
+              <div class="label">✓ КОНКРЕТНО</div>
+              <pre>
+Ось user story #1234 і критерії приймання.
 Напиши Playwright-тести (TypeScript) для
 сторінки логіну в стилі tests/auth/*.spec.ts.
 Використовуй наші page objects з pages/.
 Покрий: валідні дані, неправильний пароль,
 блокування після 5 спроб. Запусти тести
-і покажи результат.</pre></div>
-  </div>
-  <div class="tip"><b>Формула:</b> контекст (що за система) + задача (що зробити) + обмеження (фреймворк, стиль, що не чіпати) + критерій готовності (як перевірити, що зроблено).</div>
-</div>
-</section>
+і покажи результат.</pre
+              >
+            </div>
+          </div>
+          <div class="tip">
+            <b>Формула:</b> контекст (що за система) + задача (що зробити) +
+            обмеження (фреймворк, стиль, що не чіпати) + критерій готовності (як
+            перевірити, що зроблено).
+          </div>
+        </div>
+      </section>
 
-<!-- 7 CLI -->
-<section class="slide">
-<div class="inner">
-  <div class="kicker">05 · CLI</div>
-  <h2>CLI: Claude Code живе в терміналі</h2>
-  <p class="lead">CLI (command-line interface) означає роботу через командний рядок. Claude Code запускається в папці проєкту командою <code>claude</code> і бачить ваші файли, може запускати команди і тести. Натисніть на команду:</p>
-  <div class="grid" style="grid-template-columns:260px 1fr">
-    <div class="cmds" id="cmds"></div>
-    <div class="term"><div class="top"><i></i><i></i><i></i></div><div class="body" id="termBody"></div></div>
-  </div>
-</div>
-</section>
+      <!-- 7 CLI -->
+      <section class="slide">
+        <div class="inner">
+          <div class="kicker">05 · CLI</div>
+          <h2>CLI: Claude Code живе в терміналі</h2>
+          <p class="lead">
+            CLI (command-line interface) означає роботу через командний рядок.
+            Claude Code запускається в папці проєкту командою
+            <code>claude</code> і бачить ваші файли, може запускати команди і
+            тести. Натисніть на команду:
+          </p>
+          <div class="grid" style="grid-template-columns: 260px 1fr">
+            <div class="cmds" id="cmds"></div>
+            <div class="term">
+              <div class="top"><i></i><i></i><i></i></div>
+              <div class="body" id="termBody"></div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-<!-- 8 agent -->
-<section class="slide">
-<div class="inner">
-  <div class="kicker">06 · Агент та інструменти</div>
-  <h2>Агент: модель, яка діє, а не лише відповідає</h2>
-  <p class="lead">У чаті модель просто пише текст. В агенті вона може викликати інструменти (tools): читати файли, редагувати код, запускати команди. І робить це в циклі, поки задача не виконана.</p>
-  <div class="loop">
-    <div class="step" id="st0"><b>🧠 Думає</b><span>що робити далі</span></div><div class="arrow">→</div>
-    <div class="step" id="st1"><b>🛠 Діє</b><span>викликає інструмент</span></div><div class="arrow">→</div>
-    <div class="step" id="st2"><b>👀 Спостерігає</b><span>читає результат</span></div><div class="arrow">↺</div>
-    <div class="step" id="st3"><b>✅ Звітує</b><span>коли все готово</span></div>
-  </div>
-  <div style="display:flex;gap:8px;margin-bottom:10px"><button class="btn on" id="agentPlay">▶ Програти приклад</button></div>
-  <div class="log" id="agentLog"><span style="color:var(--muted)">Задача: «Тест checkout.spec.ts падає. Розберись і виправ.»</span></div>
-  <div class="tip"><b>Для QA:</b> агент вміє сам запустити тест, прочитати стектрейс і спробувати ще раз. Але він може «виправити» тест так, що той перестане ловити баг. Дивіться на diff.</div>
-</div>
-</section>
+      <!-- 8 agent -->
+      <section class="slide">
+        <div class="inner">
+          <div class="kicker">06 · Агент та інструменти</div>
+          <h2>Агент: модель, яка діє, а не лише відповідає</h2>
+          <p class="lead">
+            У чаті модель просто пише текст. В агенті вона може викликати
+            інструменти (tools): читати файли, редагувати код, запускати
+            команди. І робить це в циклі, поки задача не виконана.
+          </p>
+          <div class="loop">
+            <div class="step" id="st0">
+              <b>🧠 Думає</b><span>що робити далі</span>
+            </div>
+            <div class="arrow">→</div>
+            <div class="step" id="st1">
+              <b>🛠 Діє</b><span>викликає інструмент</span>
+            </div>
+            <div class="arrow">→</div>
+            <div class="step" id="st2">
+              <b>👀 Спостерігає</b><span>читає результат</span>
+            </div>
+            <div class="arrow">↺</div>
+            <div class="step" id="st3">
+              <b>✅ Звітує</b><span>коли все готово</span>
+            </div>
+          </div>
+          <div style="display: flex; gap: 8px; margin-bottom: 10px">
+            <button class="btn on" id="agentPlay">▶ Програти приклад</button>
+          </div>
+          <div class="log" id="agentLog">
+            <span style="color: var(--muted)"
+              >Задача: «Тест checkout.spec.ts падає. Розберись і виправ.»</span
+            >
+          </div>
+          <div class="tip">
+            <b>Для QA:</b> агент вміє сам запустити тест, прочитати стектрейс і
+            спробувати ще раз. Але він може «виправити» тест так, що той
+            перестане ловити баг. Дивіться на diff.
+          </div>
+        </div>
+      </section>
 
-<!-- 9 MCP -->
-<section class="slide">
-<div class="inner">
-  <div class="kicker">07 · MCP</div>
-  <h2>MCP: єдиний «роз'єм» до зовнішніх систем</h2>
-  <p class="lead">Model Context Protocol — відкритий стандарт, через який AI підключається до інструментів і даних. Як USB-C: один протокол, багато пристроїв. MCP-сервер дає моделі нові інструменти. Оберіть сервер:</p>
-  <div class="mcp">
-    <div class="servers" id="srvL"></div>
-    <div class="hub">Claude Code<small>MCP-клієнт</small></div>
-    <div class="mcp-out" id="mcpOut"><span style="color:var(--muted)">← Оберіть MCP-сервер, щоб побачити, що він дає.</span></div>
-  </div>
-  <div class="tip"><b>Безпека:</b> MCP-сервер отримує ваші доступи. Підключайте лише довірені сервери і перевіряйте, які дії (особливо запис і видалення) ви дозволяєте. Список підключених: команда <code>/mcp</code>.</div>
-</div>
-</section>
+      <!-- 9 MCP -->
+      <section class="slide">
+        <div class="inner">
+          <div class="kicker">07 · MCP</div>
+          <h2>MCP: єдиний «роз'єм» до зовнішніх систем</h2>
+          <p class="lead">
+            Model Context Protocol — відкритий стандарт, через який AI
+            підключається до інструментів і даних. Як USB-C: один протокол,
+            багато пристроїв. MCP-сервер дає моделі нові інструменти. Оберіть
+            сервер:
+          </p>
+          <div class="mcp">
+            <div class="servers" id="srvL"></div>
+            <div class="hub">Claude Code<small>MCP-клієнт</small></div>
+            <div class="mcp-out" id="mcpOut">
+              <span style="color: var(--muted)"
+                >← Оберіть MCP-сервер, щоб побачити, що він дає.</span
+              >
+            </div>
+          </div>
+          <div class="tip">
+            <b>Безпека:</b> MCP-сервер отримує ваші доступи. Підключайте лише
+            довірені сервери і перевіряйте, які дії (особливо запис і видалення)
+            ви дозволяєте. Список підключених: команда <code>/mcp</code>.
+          </div>
+        </div>
+      </section>
 
-<!-- 10 skill -->
-<section class="slide">
-<div class="inner">
-  <div class="kicker">08 · Скіл</div>
-  <h2>Скіл: записаний рецепт, який Claude підтягує сам</h2>
-  <p class="lead">Скіл — папка з файлом <code>SKILL.md</code> (інструкції) і, за потреби, шаблонами та скриптами. Claude бачить лише короткий опис скілу і завантажує повний текст тоді, коли задача йому відповідає. Так контекст не засмічується.</p>
-  <div class="grid" style="grid-template-columns:320px 1fr">
-    <div class="tree" id="tree"></div>
-    <div class="file" id="fileView"></div>
-  </div>
-  <div class="tip"><b>Коли робити скіл:</b> якщо ви втретє пояснюєте Claude одне й те саме (формат чекліста, стиль баг-репорту, як запускати регрес), час оформити це як скіл.</div>
-</div>
-</section>
+      <!-- 10 skill -->
+      <section class="slide">
+        <div class="inner">
+          <div class="kicker">08 · Скіл</div>
+          <h2>Скіл: записаний рецепт, який Claude підтягує сам</h2>
+          <p class="lead">
+            Скіл — папка з файлом <code>SKILL.md</code> (інструкції) і, за
+            потреби, шаблонами та скриптами. Claude бачить лише короткий опис
+            скілу і завантажує повний текст тоді, коли задача йому відповідає.
+            Так контекст не засмічується.
+          </p>
+          <div class="grid" style="grid-template-columns: 320px 1fr">
+            <div class="tree" id="tree"></div>
+            <div class="file" id="fileView"></div>
+          </div>
+          <div class="tip">
+            <b>Коли робити скіл:</b> якщо ви втретє пояснюєте Claude одне й те
+            саме (формат чекліста, стиль баг-репорту, як запускати регрес), час
+            оформити це як скіл.
+          </div>
+        </div>
+      </section>
 
-<!-- 11 more terms -->
-<section class="slide">
-<div class="inner">
-  <div class="kicker">09 · Ще кілька слів</div>
-  <h2>Словник, який точно почуєте</h2>
-  <p class="lead">Натисніть на картку, щоб перевернути.</p>
-  <div class="grid g3" id="flips"></div>
-</div>
-</section>
+      <!-- 11 more terms -->
+      <section class="slide">
+        <div class="inner">
+          <div class="kicker">09 · Ще кілька слів</div>
+          <h2>Словник, який точно почуєте</h2>
+          <p class="lead">Натисніть на картку, щоб перевернути.</p>
+          <div class="grid g3" id="flips"></div>
+        </div>
+      </section>
 
-<!-- 12 quiz -->
-<section class="slide">
-<div class="inner">
-  <div class="kicker">Перевірка</div>
-  <h2>Міні-квіз <span class="score" id="score"></span></h2>
-  <div id="quiz" style="margin-top:14px"></div>
-</div>
-</section>
+      <!-- 12 quiz -->
+      <section class="slide">
+        <div class="inner">
+          <div class="kicker">Перевірка</div>
+          <h2>Міні-квіз <span class="score" id="score"></span></h2>
+          <div id="quiz" style="margin-top: 14px"></div>
+        </div>
+      </section>
 
-<!-- 13 cheat -->
-<section class="slide">
-<div class="inner">
-  <div class="kicker">Шпаргалка</div>
-  <h2>Усе на одному слайді</h2>
-  <table style="margin-top:14px">
-    <tr><th>Поняття</th><th>Одним реченням</th><th>Що з цим робить QA</th></tr>
-    <tr><td>Модель</td><td>Передбачає текст, може помилятися впевнено</td><td>Перевіряє кожен факт і запускає код</td></tr>
-    <tr><td>Токен</td><td>Одиниця тексту, ліміту і ціни</td><td>Не вставляє мегабайтні логи цілком</td></tr>
-    <tr><td>Контекст</td><td>Усе, що модель бачить у сесії</td><td>Одна задача = одна сесія, <code>/clear</code></td></tr>
-    <tr><td>Промпт</td><td>Ваше завдання</td><td>Дає вимоги, обмеження і критерій готовності</td></tr>
-    <tr><td>CLI</td><td>Claude Code у терміналі</td><td>Запускає його в корені проєкту з тестами</td></tr>
-    <tr><td>Агент</td><td>Модель + інструменти в циклі</td><td>Рев'юїть diff, а не лише фінальний звіт</td></tr>
-    <tr><td>MCP</td><td>Стандарт підключення систем</td><td>Під'єднує ADO, Playwright, БД обережно</td></tr>
-    <tr><td>Скіл</td><td>Збережений рецепт задачі</td><td>Оформлює повторювані процеси</td></tr>
-    <tr><td>CLAUDE.md</td><td>Постійні правила проєкту</td><td>Записує туди команди запуску і конвенції</td></tr>
-  </table>
-</div>
-</section>
+      <!-- 13 cheat -->
+      <section class="slide">
+        <div class="inner">
+          <div class="kicker">Шпаргалка</div>
+          <h2>Усе на одному слайді</h2>
+          <table style="margin-top: 14px">
+            <tr>
+              <th>Поняття</th>
+              <th>Одним реченням</th>
+              <th>Що з цим робить QA</th>
+            </tr>
+            <tr>
+              <td>Модель</td>
+              <td>Передбачає текст, може помилятися впевнено</td>
+              <td>Перевіряє кожен факт і запускає код</td>
+            </tr>
+            <tr>
+              <td>Токен</td>
+              <td>Одиниця тексту, ліміту і ціни</td>
+              <td>Не вставляє мегабайтні логи цілком</td>
+            </tr>
+            <tr>
+              <td>Контекст</td>
+              <td>Усе, що модель бачить у сесії</td>
+              <td>Одна задача = одна сесія, <code>/clear</code></td>
+            </tr>
+            <tr>
+              <td>Промпт</td>
+              <td>Ваше завдання</td>
+              <td>Дає вимоги, обмеження і критерій готовності</td>
+            </tr>
+            <tr>
+              <td>CLI</td>
+              <td>Claude Code у терміналі</td>
+              <td>Запускає його в корені проєкту з тестами</td>
+            </tr>
+            <tr>
+              <td>Агент</td>
+              <td>Модель + інструменти в циклі</td>
+              <td>Рев'юїть diff, а не лише фінальний звіт</td>
+            </tr>
+            <tr>
+              <td>MCP</td>
+              <td>Стандарт підключення систем</td>
+              <td>Під'єднує ADO, Playwright, БД обережно</td>
+            </tr>
+            <tr>
+              <td>Скіл</td>
+              <td>Збережений рецепт задачі</td>
+              <td>Оформлює повторювані процеси</td>
+            </tr>
+            <tr>
+              <td>CLAUDE.md</td>
+              <td>Постійні правила проєкту</td>
+              <td>Записує туди команди запуску і конвенції</td>
+            </tr>
+          </table>
+        </div>
+      </section>
+    </div>
 
-</div>
+    <div class="nav">
+      <button class="btn" id="prev">←</button>
+      <div class="progress"><i id="prog"></i></div>
+      <div class="count" id="count"></div>
+      <button class="btn" id="next">→</button>
+      <button class="btn" id="theme" title="Тема">◐</button>
+    </div>
 
-<div class="nav">
-  <button class="btn" id="prev">←</button>
-  <div class="progress"><i id="prog"></i></div>
-  <div class="count" id="count"></div>
-  <button class="btn" id="next">→</button>
-  <button class="btn" id="theme" title="Тема">◐</button>
-</div>
+    <script>
+      // ---------- navigation ----------
+      const slides = [...document.querySelectorAll('.slide')];
+      let cur = 0;
+      function go(i) {
+        cur = Math.max(0, Math.min(slides.length - 1, i));
+        slides.forEach((s, k) => {
+          s.classList.toggle('active', k === cur);
+          s.classList.toggle('prev', k < cur);
+        });
+        document.getElementById('prog').style.width =
+          ((cur + 1) / slides.length) * 100 + '%';
+        document.getElementById('count').textContent =
+          cur + 1 + ' / ' + slides.length;
+        try {
+          history.replaceState(null, '', '#' + (cur + 1));
+        } catch (e) {}
+      }
+      document.getElementById('prev').onclick = () => go(cur - 1);
+      document.getElementById('next').onclick = () => go(cur + 1);
+      document.addEventListener('keydown', (e) => {
+        if (['TEXTAREA', 'INPUT'].includes(document.activeElement.tagName))
+          return;
+        if (['ArrowRight', 'PageDown', ' '].includes(e.key)) {
+          e.preventDefault();
+          go(cur + 1);
+        }
+        if (['ArrowLeft', 'PageUp'].includes(e.key)) {
+          e.preventDefault();
+          go(cur - 1);
+        }
+        if (e.key === 'Home') go(0);
+        if (e.key === 'End') go(slides.length - 1);
+      });
+      let tx = null;
+      document.addEventListener(
+        'touchstart',
+        (e) => (tx = e.touches[0].clientX),
+        { passive: true },
+      );
+      document.addEventListener('touchend', (e) => {
+        if (tx === null) return;
+        const d = e.changedTouches[0].clientX - tx;
+        if (Math.abs(d) > 70) go(cur + (d < 0 ? 1 : -1));
+        tx = null;
+      });
+      document
+        .querySelectorAll('[data-go]')
+        .forEach((c) => (c.onclick = () => go(+c.dataset.go - 1)));
+      document.getElementById('theme').onclick = () => {
+        const r = document.documentElement;
+        r.dataset.theme = r.dataset.theme === 'light' ? 'dark' : 'light';
+        try {
+          localStorage.setItem('ai-deck-theme', r.dataset.theme);
+        } catch (e) {}
+      };
+      try {
+        const t = localStorage.getItem('ai-deck-theme');
+        if (t) document.documentElement.dataset.theme = t;
+      } catch (e) {}
+      go((parseInt(location.hash.slice(1)) || 1) - 1);
 
-<script>
-// ---------- navigation ----------
-const slides=[...document.querySelectorAll('.slide')];
-let cur=0;
-function go(i){
-  cur=Math.max(0,Math.min(slides.length-1,i));
-  slides.forEach((s,k)=>{s.classList.toggle('active',k===cur);s.classList.toggle('prev',k<cur)});
-  document.getElementById('prog').style.width=((cur+1)/slides.length*100)+'%';
-  document.getElementById('count').textContent=(cur+1)+' / '+slides.length;
-  try{history.replaceState(null,'','#'+(cur+1))}catch(e){}
-}
-document.getElementById('prev').onclick=()=>go(cur-1);
-document.getElementById('next').onclick=()=>go(cur+1);
-document.addEventListener('keydown',e=>{
-  if(['TEXTAREA','INPUT'].includes(document.activeElement.tagName))return;
-  if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();go(cur+1)}
-  if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();go(cur-1)}
-  if(e.key==='Home')go(0); if(e.key==='End')go(slides.length-1);
-});
-let tx=null;
-document.addEventListener('touchstart',e=>tx=e.touches[0].clientX,{passive:true});
-document.addEventListener('touchend',e=>{if(tx===null)return;const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>70)go(cur+(d<0?1:-1));tx=null});
-document.querySelectorAll('[data-go]').forEach(c=>c.onclick=()=>go(+c.dataset.go-1));
-document.getElementById('theme').onclick=()=>{
-  const r=document.documentElement;r.dataset.theme=r.dataset.theme==='light'?'dark':'light';
-  try{localStorage.setItem('ai-deck-theme',r.dataset.theme)}catch(e){}
-};
-try{const t=localStorage.getItem('ai-deck-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}
-go((parseInt(location.hash.slice(1))||1)-1);
+      // ---------- tokens (illustrative) ----------
+      const COLORS = [
+        '#f4b183',
+        '#a9d18e',
+        '#9dc3e6',
+        '#ffd966',
+        '#c9a7f0',
+        '#f6a5c0',
+        '#8fd3c9',
+      ];
+      function tokenize(t) {
+        const parts =
+          t.match(/\s?[\p{L}]+|\s?\d{1,3}|\s+|[^\s\p{L}\d]/gu) || [];
+        const out = [];
+        for (const p of parts) {
+          const cyr = /[а-яіїєґ]/i.test(p);
+          const size = cyr ? 4 : 7; // кирилиця ділиться дрібніше
+          const w = p.replace(/^\s/, '');
+          if (w.length <= size) {
+            out.push(p);
+            continue;
+          }
+          let first = true,
+            s = p;
+          while (s.length > 0) {
+            const n = first && s[0] === ' ' ? size + 1 : size;
+            out.push(s.slice(0, n));
+            s = s.slice(n);
+            first = false;
+          }
+        }
+        return out;
+      }
+      const tokIn = document.getElementById('tokIn'),
+        tokOut = document.getElementById('tokOut');
+      function renderTok() {
+        const v = tokIn.value,
+          toks = tokenize(v);
+        tokOut.innerHTML = '';
+        toks.forEach((t, i) => {
+          const s = document.createElement('span');
+          s.className = 'tok';
+          s.style.background = COLORS[i % COLORS.length];
+          s.style.color = '#111';
+          s.textContent = t;
+          tokOut.appendChild(s);
+        });
+        document.getElementById('sChars').textContent = v.length;
+        document.getElementById('sWords').textContent = (
+          v.trim().match(/\S+/g) || []
+        ).length;
+        document.getElementById('sToks').textContent = toks.length;
+      }
+      tokIn.addEventListener('input', renderTok);
+      renderTok();
 
-// ---------- tokens (illustrative) ----------
-const COLORS=['#f4b183','#a9d18e','#9dc3e6','#ffd966','#c9a7f0','#f6a5c0','#8fd3c9'];
-function tokenize(t){
-  const parts=t.match(/\s?[\p{L}]+|\s?\d{1,3}|\s+|[^\s\p{L}\d]/gu)||[];
-  const out=[];
-  for(const p of parts){
-    const cyr=/[а-яіїєґ]/i.test(p);
-    const size=cyr?4:7;            // кирилиця ділиться дрібніше
-    const w=p.replace(/^\s/,'');
-    if(w.length<=size){out.push(p);continue}
-    let first=true,s=p;
-    while(s.length>0){const n=first&&s[0]===' '?size+1:size;out.push(s.slice(0,n));s=s.slice(n);first=false}
-  }
-  return out;
-}
-const tokIn=document.getElementById('tokIn'),tokOut=document.getElementById('tokOut');
-function renderTok(){
-  const v=tokIn.value,toks=tokenize(v);
-  tokOut.innerHTML='';
-  toks.forEach((t,i)=>{const s=document.createElement('span');s.className='tok';s.style.background=COLORS[i%COLORS.length];s.style.color='#111';s.textContent=t;tokOut.appendChild(s)});
-  document.getElementById('sChars').textContent=v.length;
-  document.getElementById('sWords').textContent=(v.trim().match(/\S+/g)||[]).length;
-  document.getElementById('sToks').textContent=toks.length;
-}
-tokIn.addEventListener('input',renderTok);renderTok();
+      // ---------- context ----------
+      const CAP = 200;
+      const ctxDefs = [
+        { n: 'Системні інструкції', k: 12, c: '#9aa3b5', fixed: true },
+        { n: 'CLAUDE.md', k: 4, c: '#b48cff' },
+        { n: 'User story з ADO', k: 6, c: '#6fa8ff' },
+        { n: 'checkout.spec.ts', k: 10, c: '#4fc38a' },
+        { n: 'Page objects (10 файлів)', k: 35, c: '#8fd3c9' },
+        { n: 'Лог прогону CI', k: 60, c: '#e8c25a' },
+        { n: 'HTML сторінки (DOM)', k: 70, c: '#e07a4f' },
+        { n: 'Ваша розмова', k: 25, c: '#f6a5c0' },
+      ];
+      let ctx = [ctxDefs[0]];
+      const bar = document.getElementById('ctxBar'),
+        msg = document.getElementById('ctxMsg'),
+        btns = document.getElementById('ctxBtns');
+      ctxDefs.slice(1).forEach((d) => {
+        const b = document.createElement('button');
+        b.className = 'btn';
+        b.textContent = '+ ' + d.n + ' (~' + d.k + 'K)';
+        b.onclick = () => {
+          ctx.push({ ...d });
+          renderCtx();
+        };
+        btns.appendChild(b);
+      });
+      function renderCtx(note) {
+        const used = ctx.reduce((a, d) => a + d.k, 0);
+        bar.innerHTML = '';
+        ctx.forEach((d) => {
+          const s = document.createElement('div');
+          s.className = 'seg';
+          s.style.background = d.c;
+          s.style.width =
+            Math.min(100, (d.k / Math.max(CAP, used)) * 100) + '%';
+          s.textContent = d.k >= 15 ? d.n : '';
+          s.title = d.n + ' ~' + d.k + 'K';
+          bar.appendChild(s);
+        });
+        if (note) {
+          msg.innerHTML = note;
+          return;
+        }
+        if (used > CAP)
+          msg.innerHTML =
+            '<span class="warn">Переповнено: ~' +
+            used +
+            'K із ' +
+            CAP +
+            'K.</span> Claude Code автоматично стисне історію (auto-compact), і частина деталей загубиться.';
+        else if (used > CAP * 0.7)
+          msg.innerHTML =
+            'Зайнято ~' +
+            used +
+            'K із ' +
+            CAP +
+            'K. <span class="warn">Наближаємось до межі</span>, час подумати про <code>/compact</code> або нову сесію.';
+        else msg.innerHTML = 'Зайнято ~' + used + 'K із ' + CAP + 'K токенів.';
+      }
+      document.getElementById('ctxCompact').onclick = () => {
+        const used = ctx.reduce((a, d) => a + d.k, 0);
+        ctx = [
+          ctxDefs[0],
+          {
+            n: 'Підсумок розмови',
+            k: Math.max(4, Math.round((used - 12) * 0.12)),
+            c: '#f6a5c0',
+          },
+        ];
+        renderCtx(
+          'Стиснуто до короткого підсумку. Місце звільнилось, але дрібні деталі тепер лише «в переказі».',
+        );
+      };
+      document.getElementById('ctxClear').onclick = () => {
+        ctx = [ctxDefs[0]];
+        renderCtx(
+          'Чиста сесія: лише системні інструкції. CLAUDE.md підтягнеться знову при першому запиті.',
+        );
+      };
+      renderCtx();
 
-// ---------- context ----------
-const CAP=200;
-const ctxDefs=[
-  {n:'Системні інструкції',k:12,c:'#9aa3b5',fixed:true},
-  {n:'CLAUDE.md',k:4,c:'#b48cff'},
-  {n:'User story з ADO',k:6,c:'#6fa8ff'},
-  {n:'checkout.spec.ts',k:10,c:'#4fc38a'},
-  {n:'Page objects (10 файлів)',k:35,c:'#8fd3c9'},
-  {n:'Лог прогону CI',k:60,c:'#e8c25a'},
-  {n:'HTML сторінки (DOM)',k:70,c:'#e07a4f'},
-  {n:'Ваша розмова',k:25,c:'#f6a5c0'},
-];
-let ctx=[ctxDefs[0]];
-const bar=document.getElementById('ctxBar'),msg=document.getElementById('ctxMsg'),btns=document.getElementById('ctxBtns');
-ctxDefs.slice(1).forEach(d=>{const b=document.createElement('button');b.className='btn';b.textContent='+ '+d.n+' (~'+d.k+'K)';b.onclick=()=>{ctx.push({...d});renderCtx()};btns.appendChild(b)});
-function renderCtx(note){
-  const used=ctx.reduce((a,d)=>a+d.k,0);
-  bar.innerHTML='';
-  ctx.forEach(d=>{const s=document.createElement('div');s.className='seg';s.style.background=d.c;s.style.width=Math.min(100,d.k/Math.max(CAP,used)*100)+'%';s.textContent=d.k>=15?d.n:'';s.title=d.n+' ~'+d.k+'K';bar.appendChild(s)});
-  if(note){msg.innerHTML=note;return}
-  if(used>CAP)msg.innerHTML='<span class="warn">Переповнено: ~'+used+'K із '+CAP+'K.</span> Claude Code автоматично стисне історію (auto-compact), і частина деталей загубиться.';
-  else if(used>CAP*.7)msg.innerHTML='Зайнято ~'+used+'K із '+CAP+'K. <span class="warn">Наближаємось до межі</span>, час подумати про <code>/compact</code> або нову сесію.';
-  else msg.innerHTML='Зайнято ~'+used+'K із '+CAP+'K токенів.';
-}
-document.getElementById('ctxCompact').onclick=()=>{
-  const used=ctx.reduce((a,d)=>a+d.k,0);
-  ctx=[ctxDefs[0],{n:'Підсумок розмови',k:Math.max(4,Math.round((used-12)*.12)),c:'#f6a5c0'}];
-  renderCtx('Стиснуто до короткого підсумку. Місце звільнилось, але дрібні деталі тепер лише «в переказі».');
-};
-document.getElementById('ctxClear').onclick=()=>{ctx=[ctxDefs[0]];renderCtx('Чиста сесія: лише системні інструкції. CLAUDE.md підтягнеться знову при першому запиті.')};
-renderCtx();
-
-// ---------- terminal ----------
-const term=[
-  ['claude','Запустити в папці проєкту',
-`<span class="p">~/shop-tests $</span> claude
+      // ---------- terminal ----------
+      const term = [
+        [
+          'claude',
+          'Запустити в папці проєкту',
+          `<span class="p">~/shop-tests $</span> claude
 <span class="c">╭─ Claude Code ─────────────────────╮</span>
 <span class="c">│</span> cwd: ~/shop-tests
 <span class="c">╰───────────────────────────────────╯</span>
 <span class="p">></span> Запусти smoke-тести і скажи, що впало
 <span class="d">● Bash(npx playwright test --grep @smoke)</span>
 <span class="d">  ⎿ 23 passed, 1 failed</span>
-Впав <b>cart.spec.ts:41</b>: кнопка «Оформити» не з'явилась за 5 с.`],
-  ['/init','Створити CLAUDE.md',
-`<span class="p">></span> /init
+Впав <b>cart.spec.ts:41</b>: кнопка «Оформити» не з'явилась за 5 с.`,
+        ],
+        [
+          '/init',
+          'Створити CLAUDE.md',
+          `<span class="p">></span> /init
 <span class="d">● Аналізую структуру проєкту…</span>
 <span class="d">● Read(package.json, playwright.config.ts)</span>
 <span class="ok">✓ Створено CLAUDE.md</span>
   - як запускати тести: npm run test:e2e
   - структура: tests/, pages/, fixtures/
-  - конвенції іменування spec-файлів`],
-  ['/model','Обрати модель',
-`<span class="p">></span> /model
+  - конвенції іменування spec-файлів`,
+        ],
+        [
+          '/model',
+          'Обрати модель',
+          `<span class="p">></span> /model
   Оберіть модель:
   <span class="ok">❯ Sonnet</span>   щоденні задачі
     Opus     складні задачі
-    Haiku    швидко і дешево`],
-  ['/context','Що зараз у контексті',
-`<span class="p">></span> /context
+    Haiku    швидко і дешево`,
+        ],
+        [
+          '/context',
+          'Що зараз у контексті',
+          `<span class="p">></span> /context
   System prompt     ██░░░░░░░░   6%
   MCP tools         █░░░░░░░░░   4%
   Memory (CLAUDE.md)░░░░░░░░░░   1%
   Messages          █████░░░░░  48%
-  <span class="d">Вільно: 41%</span>`],
-  ['/mcp','Підключені MCP-сервери',
-`<span class="p">></span> /mcp
+  <span class="d">Вільно: 41%</span>`,
+        ],
+        [
+          '/mcp',
+          'Підключені MCP-сервери',
+          `<span class="p">></span> /mcp
   <span class="ok">●</span> azure-devops   connected   42 tools
   <span class="ok">●</span> playwright     connected   21 tools
-  <span class="d">○</span> postgres       disabled`],
-  ['/clear','Почати з чистого аркуша',
-`<span class="p">></span> /clear
-<span class="ok">✓ Контекст очищено.</span> Нова задача, нова розмова.`],
-];
-const cmds=document.getElementById('cmds'),tb=document.getElementById('termBody');
-let typer=null;
-function showTerm(i){
-  [...cmds.children].forEach((b,k)=>b.classList.toggle('on',k===i));
-  clearInterval(typer);const lines=term[i][2].split('\n');let n=0;tb.innerHTML='';
-  typer=setInterval(()=>{tb.innerHTML=lines.slice(0,++n).join('\n');if(n>=lines.length)clearInterval(typer)},140);
-}
-term.forEach((t,i)=>{const b=document.createElement('button');b.className='btn';b.innerHTML=t[0]+'<small>'+t[1]+'</small>';b.onclick=()=>showTerm(i);cmds.appendChild(b)});
-showTerm(0);
+  <span class="d">○</span> postgres       disabled`,
+        ],
+        [
+          '/clear',
+          'Почати з чистого аркуша',
+          `<span class="p">></span> /clear
+<span class="ok">✓ Контекст очищено.</span> Нова задача, нова розмова.`,
+        ],
+      ];
+      const cmds = document.getElementById('cmds'),
+        tb = document.getElementById('termBody');
+      let typer = null;
+      function showTerm(i) {
+        [...cmds.children].forEach((b, k) => b.classList.toggle('on', k === i));
+        clearInterval(typer);
+        const lines = term[i][2].split('\n');
+        let n = 0;
+        tb.innerHTML = '';
+        typer = setInterval(() => {
+          tb.innerHTML = lines.slice(0, ++n).join('\n');
+          if (n >= lines.length) clearInterval(typer);
+        }, 140);
+      }
+      term.forEach((t, i) => {
+        const b = document.createElement('button');
+        b.className = 'btn';
+        b.innerHTML = t[0] + '<small>' + t[1] + '</small>';
+        b.onclick = () => showTerm(i);
+        cmds.appendChild(b);
+      });
+      showTerm(0);
 
-// ---------- agent loop ----------
-const agentSteps=[
-  [0,'🧠 Треба спершу відтворити падіння.'],
-  [1,'🛠 Bash: npx playwright test checkout.spec.ts'],
-  [2,'👀 Timeout: locator("#pay-btn") not found'],
-  [0,'🧠 Можливо, змінився локатор. Подивлюсь сторінку.'],
-  [1,'🛠 Read: pages/CheckoutPage.ts, Grep: "pay-btn" у src/'],
-  [2,'👀 У новому релізі кнопка має data-testid="pay-button"'],
-  [1,'🛠 Edit: CheckoutPage.ts → getByTestId("pay-button")'],
-  [1,'🛠 Bash: npx playwright test checkout.spec.ts'],
-  [2,'👀 5 passed'],
-  [3,'✅ Причина: змінений testid після релізу. Виправив page object, тест зелений.'],
-];
-let agentT=null;
-document.getElementById('agentPlay').onclick=()=>{
-  clearInterval(agentT);const log=document.getElementById('agentLog');
-  log.innerHTML='<span style="color:var(--muted)">Задача: «Тест checkout.spec.ts падає. Розберись і виправ.»</span>';
-  let i=0;
-  agentT=setInterval(()=>{
-    document.querySelectorAll('.step').forEach(s=>s.classList.remove('lit'));
-    if(i>=agentSteps.length){clearInterval(agentT);return}
-    const [st,t]=agentSteps[i++];document.getElementById('st'+st).classList.add('lit');
-    log.innerHTML+='<br>'+t;
-  },900);
-};
+      // ---------- agent loop ----------
+      const agentSteps = [
+        [0, '🧠 Треба спершу відтворити падіння.'],
+        [1, '🛠 Bash: npx playwright test checkout.spec.ts'],
+        [2, '👀 Timeout: locator("#pay-btn") not found'],
+        [0, '🧠 Можливо, змінився локатор. Подивлюсь сторінку.'],
+        [1, '🛠 Read: pages/CheckoutPage.ts, Grep: "pay-btn" у src/'],
+        [2, '👀 У новому релізі кнопка має data-testid="pay-button"'],
+        [1, '🛠 Edit: CheckoutPage.ts → getByTestId("pay-button")'],
+        [1, '🛠 Bash: npx playwright test checkout.spec.ts'],
+        [2, '👀 5 passed'],
+        [
+          3,
+          '✅ Причина: змінений testid після релізу. Виправив page object, тест зелений.',
+        ],
+      ];
+      let agentT = null;
+      document.getElementById('agentPlay').onclick = () => {
+        clearInterval(agentT);
+        const log = document.getElementById('agentLog');
+        log.innerHTML =
+          '<span style="color:var(--muted)">Задача: «Тест checkout.spec.ts падає. Розберись і виправ.»</span>';
+        let i = 0;
+        agentT = setInterval(() => {
+          document
+            .querySelectorAll('.step')
+            .forEach((s) => s.classList.remove('lit'));
+          if (i >= agentSteps.length) {
+            clearInterval(agentT);
+            return;
+          }
+          const [st, t] = agentSteps[i++];
+          document.getElementById('st' + st).classList.add('lit');
+          log.innerHTML += '<br>' + t;
+        }, 900);
+      };
 
-// ---------- MCP ----------
-const servers=[
-  {n:'Azure DevOps',d:'work items, test plans, PR',out:
-`<b>Нові інструменти:</b> отримати work item, створити баг, оновити тест-кейс…
+      // ---------- MCP ----------
+      const servers = [
+        {
+          n: 'Azure DevOps',
+          d: 'work items, test plans, PR',
+          out: `<b>Нові інструменти:</b> отримати work item, створити баг, оновити тест-кейс…
 <pre>> Візьми user story 4512 з ADO і склади чекліст
 ● ado.get_work_item(id: 4512)
   ⎿ "Як покупець, я хочу застосувати промокод…"
-● Складаю чекліст за критеріями приймання…</pre>`},
-  {n:'Playwright',d:'керування браузером',out:
-`<b>Нові інструменти:</b> відкрити сторінку, клікнути, зробити знімок, прочитати DOM.
+● Складаю чекліст за критеріями приймання…</pre>`,
+        },
+        {
+          n: 'Playwright',
+          d: 'керування браузером',
+          out: `<b>Нові інструменти:</b> відкрити сторінку, клікнути, зробити знімок, прочитати DOM.
 <pre>> Відкрий staging і перевір форму реєстрації
 ● browser.navigate("https://staging…/signup")
 ● browser.click("Зареєструватись")
-  ⎿ помилка: "Поле Email обов'язкове" ✓</pre>`},
-  {n:'GitHub',d:'код, issues, PR',out:
-`<b>Нові інструменти:</b> читати PR, коментувати, створювати issue.
+  ⎿ помилка: "Поле Email обов'язкове" ✓</pre>`,
+        },
+        {
+          n: 'GitHub',
+          d: 'код, issues, PR',
+          out: `<b>Нові інструменти:</b> читати PR, коментувати, створювати issue.
 <pre>> Подивись PR 87 і скажи, які тести варто оновити
 ● github.pull_request_read(87)
   ⎿ змінено: src/cart/discount.ts
-● Пропоную оновити tests/cart/discount.spec.ts</pre>`},
-  {n:'База даних',d:'SQL-запити (read-only!)',out:
-`<b>Нові інструменти:</b> виконувати запити, дивитись схему.
+● Пропоную оновити tests/cart/discount.spec.ts</pre>`,
+        },
+        {
+          n: 'База даних',
+          d: 'SQL-запити (read-only!)',
+          out: `<b>Нові інструменти:</b> виконувати запити, дивитись схему.
 <pre>> Знайди тестового юзера з активною підпискою
 ● db.query("SELECT email FROM users
             WHERE plan='pro' LIMIT 1")
   ⎿ qa+pro@example.com</pre>
-<span class="warn">Давайте доступ лише на читання.</span>`},
-];
-const srvL=document.getElementById('srvL'),mcpOut=document.getElementById('mcpOut');
-servers.forEach((s,i)=>{const b=document.createElement('button');b.className='srv';b.innerHTML='<b>'+s.n+'</b><span>'+s.d+'</span>';
-  b.onclick=()=>{[...srvL.children].forEach(x=>x.classList.remove('on'));b.classList.add('on');mcpOut.innerHTML=s.out};srvL.appendChild(b)});
+<span class="warn">Давайте доступ лише на читання.</span>`,
+        },
+      ];
+      const srvL = document.getElementById('srvL'),
+        mcpOut = document.getElementById('mcpOut');
+      servers.forEach((s, i) => {
+        const b = document.createElement('button');
+        b.className = 'srv';
+        b.innerHTML = '<b>' + s.n + '</b><span>' + s.d + '</span>';
+        b.onclick = () => {
+          [...srvL.children].forEach((x) => x.classList.remove('on'));
+          b.classList.add('on');
+          mcpOut.innerHTML = s.out;
+        };
+        srvL.appendChild(b);
+      });
 
-// ---------- skill tree ----------
-const files={
-'SKILL.md':`<span class="m">---</span>
+      // ---------- skill tree ----------
+      const files = {
+        'SKILL.md': `<span class="m">---</span>
 <span class="k">name:</span> ado-checklist
 <span class="k">description:</span> Створює QA-чекліст з user story в Azure
   DevOps. Використовуй, коли просять чекліст,
@@ -593,7 +1546,7 @@ const files={
    що незрозуміло з вимог.
 5. Не вигадуй поведінку: якщо вимоги мовчать,
    це питання, а не перевірка.`,
-'templates/checklist.md':`<span class="h">## {Назва фічі}</span>
+        'templates/checklist.md': `<span class="h">## {Назва фічі}</span>
 
 <span class="h">### Позитивні</span>
 - [ ] ...
@@ -606,48 +1559,165 @@ const files={
 
 <span class="h">## Відкриті питання</span>
 - ...`,
-'scripts/to_xlsx.py':`<span class="m"># Допоміжний скрипт: Claude може його запустити,
+        'scripts/to_xlsx.py': `<span class="m"># Допоміжний скрипт: Claude може його запустити,
 # щоб перетворити чекліст на таблицю для прогону.</span>
 <span class="k">import</span> sys, openpyxl
-...`};
-const tree=document.getElementById('tree'),fv=document.getElementById('fileView');
-tree.innerHTML='📁 .claude/skills/<br>&nbsp;&nbsp;📁 ado-checklist/<br>'+
-  Object.keys(files).map(f=>'&nbsp;&nbsp;&nbsp;&nbsp;<span class="f" data-f="'+f+'">📄 '+f+'</span>').join('<br>');
-tree.querySelectorAll('.f').forEach(el=>el.onclick=()=>{tree.querySelectorAll('.f').forEach(x=>x.classList.remove('on'));el.classList.add('on');fv.innerHTML=files[el.dataset.f]});
-tree.querySelector('.f').click();
+...`,
+      };
+      const tree = document.getElementById('tree'),
+        fv = document.getElementById('fileView');
+      tree.innerHTML =
+        '📁 .claude/skills/<br>&nbsp;&nbsp;📁 ado-checklist/<br>' +
+        Object.keys(files)
+          .map(
+            (f) =>
+              '&nbsp;&nbsp;&nbsp;&nbsp;<span class="f" data-f="' +
+              f +
+              '">📄 ' +
+              f +
+              '</span>',
+          )
+          .join('<br>');
+      tree.querySelectorAll('.f').forEach(
+        (el) =>
+          (el.onclick = () => {
+            tree
+              .querySelectorAll('.f')
+              .forEach((x) => x.classList.remove('on'));
+            el.classList.add('on');
+            fv.innerHTML = files[el.dataset.f];
+          }),
+      );
+      tree.querySelector('.f').click();
 
-// ---------- flip cards ----------
-const flips=[
-  ['CLAUDE.md','постійні правила проєкту','Файл у корені репозиторію, який Claude Code читає на початку кожної сесії: як запускати тести, конвенції, заборони.'],
-  ['Галюцинація','впевнена неправда','Модель вигадує факт, метод чи локатор, якого не існує. Ліки: давати джерела і перевіряти запуском.'],
-  ['Субагент','помічник з власним контекстом','Окремий агент для підзадачі (наприклад, пошук по коду). Повертає лише висновок і не засмічує основний контекст.'],
-  ['Hook','автоматична дія','Команда, яку Claude Code запускає сам на подію: наприклад, лінтер після кожного редагування файлу.'],
-  ['Slash-команда','швидка дія в CLI','Команди з «/»: /clear, /compact, /model, /mcp. Можна створювати власні, наприклад /regression.'],
-  ['Режими дозволів','хто що схвалює','Claude питає дозволу на зміни і команди. Можна дозволити більше, але небезпечні дії краще схвалювати вручну.'],
-];
-const fl=document.getElementById('flips');
-flips.forEach(([a,b,c])=>{const d=document.createElement('div');d.className='flip';d.innerHTML='<div class="in"><div class="fc"><b>'+a+'</b><span>'+b+'</span></div><div class="bc">'+c+'</div></div>';d.onclick=()=>d.classList.toggle('on');fl.appendChild(d)});
+      // ---------- flip cards ----------
+      const flips = [
+        [
+          'CLAUDE.md',
+          'постійні правила проєкту',
+          'Файл у корені репозиторію, який Claude Code читає на початку кожної сесії: як запускати тести, конвенції, заборони.',
+        ],
+        [
+          'Галюцинація',
+          'впевнена неправда',
+          'Модель вигадує факт, метод чи локатор, якого не існує. Ліки: давати джерела і перевіряти запуском.',
+        ],
+        [
+          'Субагент',
+          'помічник з власним контекстом',
+          'Окремий агент для підзадачі (наприклад, пошук по коду). Повертає лише висновок і не засмічує основний контекст.',
+        ],
+        [
+          'Hook',
+          'автоматична дія',
+          'Команда, яку Claude Code запускає сам на подію: наприклад, лінтер після кожного редагування файлу.',
+        ],
+        [
+          'Slash-команда',
+          'швидка дія в CLI',
+          'Команди з «/»: /clear, /compact, /model, /mcp. Можна створювати власні, наприклад /regression.',
+        ],
+        [
+          'Режими дозволів',
+          'хто що схвалює',
+          'Claude питає дозволу на зміни і команди. Можна дозволити більше, але небезпечні дії краще схвалювати вручну.',
+        ],
+      ];
+      const fl = document.getElementById('flips');
+      flips.forEach(([a, b, c]) => {
+        const d = document.createElement('div');
+        d.className = 'flip';
+        d.innerHTML =
+          '<div class="in"><div class="fc"><b>' +
+          a +
+          '</b><span>' +
+          b +
+          '</span></div><div class="bc">' +
+          c +
+          '</div></div>';
+        d.onclick = () => d.classList.toggle('on');
+        fl.appendChild(d);
+      });
 
-// ---------- quiz ----------
-const quiz=[
-  {q:'Ви вставили в чат лог CI на 50 000 рядків. Що найімовірніше станеться?',o:['Нічого, модель усе запам\'ятає','Контекст швидко заповниться, деталі почнуть губитись','Модель стане розумнішою'],a:1,w:'Великі логи з\'їдають токени. Краще дати релевантний фрагмент або попросити агента самому пошукати grep-ом.'},
-  {q:'Що таке MCP?',o:['Нова модель від Anthropic','Стандарт підключення AI до зовнішніх інструментів і даних','Команда для очищення контексту'],a:1,w:'MCP — протокол. Сервери на ньому дають моделі нові інструменти, наприклад доступ до Azure DevOps.'},
-  {q:'Ви щодня пояснюєте Claude формат баг-репорту вашої команди. Що краще зробити?',o:['Пояснювати далі','Оформити скіл або записати правило в CLAUDE.md','Перейти на іншу модель'],a:1,w:'Повторювані інструкції варто зберегти один раз: скіл для процедури, CLAUDE.md для постійних правил.'},
-  {q:'Агент повідомив: «Тест виправлено, все зелене». Що робить QA?',o:['Закриває задачу','Дивиться diff: чи не послабили перевірку, і перезапускає сам','Просить написати «точно все ок?»'],a:1,w:'Зелений тест не означає, що він досі ловить баг. Агент міг прибрати assert.'},
-];
-let score=0,answered=0;
-const qz=document.getElementById('quiz'),sc=document.getElementById('score');
-quiz.forEach((it,qi)=>{
-  const d=document.createElement('div');d.className='q';
-  d.innerHTML='<b>'+(qi+1)+'. '+it.q+'</b><div class="opts"></div><div class="why"></div>';
-  const opts=d.querySelector('.opts');
-  it.o.forEach((o,oi)=>{const b=document.createElement('button');b.className='btn';b.textContent=o;
-    b.onclick=()=>{if(d.dataset.done)return;d.dataset.done=1;answered++;
-      if(oi===it.a){score++;b.classList.add('right')}else{b.classList.add('wrong');opts.children[it.a].classList.add('right')}
-      d.querySelector('.why').textContent=it.w;sc.textContent=score+' / '+quiz.length};
-    opts.appendChild(b)});
-  qz.appendChild(d);
-});
-</script>
-</body>
+      // ---------- quiz ----------
+      const quiz = [
+        {
+          q: 'Ви вставили в чат лог CI на 50 000 рядків. Що найімовірніше станеться?',
+          o: [
+            "Нічого, модель усе запам'ятає",
+            'Контекст швидко заповниться, деталі почнуть губитись',
+            'Модель стане розумнішою',
+          ],
+          a: 1,
+          w: "Великі логи з'їдають токени. Краще дати релевантний фрагмент або попросити агента самому пошукати grep-ом.",
+        },
+        {
+          q: 'Що таке MCP?',
+          o: [
+            'Нова модель від Anthropic',
+            'Стандарт підключення AI до зовнішніх інструментів і даних',
+            'Команда для очищення контексту',
+          ],
+          a: 1,
+          w: 'MCP — протокол. Сервери на ньому дають моделі нові інструменти, наприклад доступ до Azure DevOps.',
+        },
+        {
+          q: 'Ви щодня пояснюєте Claude формат баг-репорту вашої команди. Що краще зробити?',
+          o: [
+            'Пояснювати далі',
+            'Оформити скіл або записати правило в CLAUDE.md',
+            'Перейти на іншу модель',
+          ],
+          a: 1,
+          w: 'Повторювані інструкції варто зберегти один раз: скіл для процедури, CLAUDE.md для постійних правил.',
+        },
+        {
+          q: 'Агент повідомив: «Тест виправлено, все зелене». Що робить QA?',
+          o: [
+            'Закриває задачу',
+            'Дивиться diff: чи не послабили перевірку, і перезапускає сам',
+            'Просить написати «точно все ок?»',
+          ],
+          a: 1,
+          w: 'Зелений тест не означає, що він досі ловить баг. Агент міг прибрати assert.',
+        },
+      ];
+      let score = 0,
+        answered = 0;
+      const qz = document.getElementById('quiz'),
+        sc = document.getElementById('score');
+      quiz.forEach((it, qi) => {
+        const d = document.createElement('div');
+        d.className = 'q';
+        d.innerHTML =
+          '<b>' +
+          (qi + 1) +
+          '. ' +
+          it.q +
+          '</b><div class="opts"></div><div class="why"></div>';
+        const opts = d.querySelector('.opts');
+        it.o.forEach((o, oi) => {
+          const b = document.createElement('button');
+          b.className = 'btn';
+          b.textContent = o;
+          b.onclick = () => {
+            if (d.dataset.done) return;
+            d.dataset.done = 1;
+            answered++;
+            if (oi === it.a) {
+              score++;
+              b.classList.add('right');
+            } else {
+              b.classList.add('wrong');
+              opts.children[it.a].classList.add('right');
+            }
+            d.querySelector('.why').textContent = it.w;
+            sc.textContent = score + ' / ' + quiz.length;
+          };
+          opts.appendChild(b);
+        });
+        qz.appendChild(d);
+      });
+    </script>
+  </body>
 </html>
