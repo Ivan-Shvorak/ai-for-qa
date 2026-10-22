@@ -1,3 +1,5 @@
+# Task desciption
+
 Make a copy of this Google Spreadsheet template and switch to the "Checklist" sheet. - /checklist.xlsx
 
 For each check, fill in:
@@ -10,7 +12,7 @@ Copy the link and paste it into the platform.
 
 <https://jshop.mate.academy/?_gl=1*19vf2hz*_gcl_au*MjIwMjE1NTk0LjE3ODQ0NzA5MjcuODc0MjcyOTAxLjE3OTE2NDgzMDYuMTc5MTY1MDE0OS4xMTgzMzU3Nzc1LjE3OTE2NDgzMDYuMTc5MTY1MDE0OQ..#/register>
 
-Requirements for Registration form
+## Requirements for Registration form
 
 JS-REQ-001 The user email field must accept only a valid email address
 JS-REQ-002 The user email field must accept unique values
