@@ -229,7 +229,7 @@ th{color:var(--muted);font-weight:600;font-size:13px;text-transform:uppercase;le
   <h1>Claude Code у роботі QA:<br>як це виглядає щодня</h1>
   <p class="lead">Не теорія, а мій реальний робочий процес на комерційному проєкті: які скіли я написав для мануального й автоматизованого тестування, що вони видають і де я як QA обов'язково лишаюсь «у циклі».</p>
   <div class="hero-tags">
-    <span>Вимоги</span><span>Чекліст</span><span>Мануальний прогін</span><span>Баг</span><span>Автотести</span><span>CI-звіт</span><span>Фікс тесту</span>
+    <span>Вимоги</span><span>Чекліст</span><span>Мануальний прогін</span><span>Баг</span><span>Автотести</span><span>CI-звіт</span><span>Фікс тесту</span><span>База знань</span>
   </div>
   <p style="margin-top:34px;color:var(--muted);font-size:14px">Гортайте стрілками ← → або пробілом. Майже кожен слайд можна «потикати». Назви клієнтів, адреси й доступи прибрані.</p>
 </div>
@@ -240,7 +240,7 @@ th{color:var(--muted);font-weight:600;font-size:13px;text-transform:uppercase;le
 <div class="inner">
   <div class="kicker">01 · Сетап</div>
   <h2>З чим працює мій Claude Code</h2>
-  <p class="lead">Проєкт: велике Angular-монорепо (CRM + PWA) з набором Playwright-тестів, які щодня ганяються в Jenkins. Claude Code запускається в корені репозиторію і має три MCP-сервери плюс локальні інструменти. Оберіть джерело:</p>
+  <p class="lead">Проєкт: велике Angular-монорепо (CRM + PWA) з набором Playwright-тестів, які щодня ганяються в Jenkins. Claude Code запускається в корені репозиторію і має три MCP-сервери, Playwright CLI і локальні файли з правилами. Оберіть джерело:</p>
   <div class="mcp">
     <div class="servers" id="srvL"></div>
     <div class="hub">Claude Code<small>у корені репо</small></div>
@@ -254,11 +254,11 @@ th{color:var(--muted);font-weight:600;font-size:13px;text-transform:uppercase;le
 <section class="slide">
 <div class="inner">
   <div class="kicker">02 · Карта скілів</div>
-  <h2>10 скілів покривають увесь цикл тестування</h2>
+  <h2>12 скілів покривають увесь цикл тестування</h2>
   <div class="stats">
-    <div class="stat"><b>10</b><span>скілів у .claude/skills</span></div>
-    <div class="stat"><b>38</b><span>чеклістів за ~6 тижнів</span></div>
-    <div class="stat"><b>18</b><span>звітів (CI, прогони, аналіз)</span></div>
+    <div class="stat"><b>12</b><span>скілів у .claude/skills</span></div>
+    <div class="stat"><b>69</b><span>чеклістів за ~8 тижнів</span></div>
+    <div class="stat"><b>121</b><span>документ у базі знань</span></div>
     <div class="stat"><b>3</b><span>MCP: ADO, Jenkins, Playwright</span></div>
   </div>
   <div class="life">
@@ -428,12 +428,29 @@ th{color:var(--muted);font-weight:600;font-size:13px;text-transform:uppercase;le
 </div>
 </section>
 
-<!-- 12 write tests -->
+<!-- 12 knowledge base -->
 <section class="slide">
 <div class="inner">
-  <div class="kicker">11 · Автоматизація · нова фіча</div>
+  <div class="kicker">11 · Пам'ять · база знань</div>
+  <h2><code style="font-size:.8em">qa-knowledge-base</code>: усе, що знайшли, лишається</h2>
+  <p class="lead">Раніше кожен скіл клав результат у свою папку, і наступна сесія про нього не знала. Тепер є одна база в <code>.claude/kb/</code>, а окремий скіл описує, куди і як писати. Чекліст, рев'ю вимог, прогін і звіт CI зберігаються через нього. Оберіть частину:</p>
+  <div class="loc">
+    <div class="opts" id="kbOpts"></div>
+    <div>
+      <div class="file" id="kbCode" style="min-height:170px"></div>
+      <div class="out" id="kbOut" style="min-height:70px;margin-top:12px"></div>
+    </div>
+  </div>
+  <div class="tip"><b>Два шари:</b> <i>records</i> незмінні (новий результат дає новий файл, старий отримує <code>status: superseded</code>), а <i>areas</i> і <i>reference</i> живі й описують, як продукт працює <b>зараз</b>. Перед новою задачею агент спершу грепає <code>INDEX.md</code>, а не читає сотню файлів.</div>
+</div>
+</section>
+
+<!-- 13 write tests -->
+<section class="slide">
+<div class="inner">
+  <div class="kicker">12 · Автоматизація · нова фіча</div>
   <h2><code style="font-size:.8em">playwright-write-tests-for-new-feature</code></h2>
-  <p class="lead">Я кладу короткий бриф у <code>.claude/new-feature-to-test/</code>, а скіл спершу досліджує сторінку через Playwright MCP і лише потім пише код. Найбільший скіл (~390 рядків), бо в ньому зібрані всі «граблі» нашого фреймворку.</p>
+  <p class="lead">Я кладу короткий бриф у <code>.claude/kb/records/briefs/</code>, а скіл додатково читає з бази знань сторінку зони й чеклісти цієї фічі. Далі досліджує сторінку на stage і лише потім пише код. Скіл схуд з ~390 до ~65 рядків: тут лишився тільки <b>процес</b>, а правила переїхали в окремий скіл (наступний слайд).</p>
   <div class="steps" id="wtSteps"></div>
   <div class="grid g2">
     <div class="file" id="wtFile" style="min-height:250px"></div>
@@ -442,10 +459,27 @@ th{color:var(--muted);font-weight:600;font-size:13px;text-transform:uppercase;le
 </div>
 </section>
 
-<!-- 13 locators -->
+<!-- 14 conventions -->
 <section class="slide">
 <div class="inner">
-  <div class="kicker">12 · Автоматизація · локатори</div>
+  <div class="kicker">13 · Патерн · процес і правила</div>
+  <h2><code style="font-size:.8em">playwright-conventions</code>: правила окремо від процесу</h2>
+  <p class="lead">Три скіли для автотестів (нова фіча, новий партнер, фікс) мали дублювати одні й ті самі правила. Тепер правила лежать в одному базовому скілі: короткий <code>SKILL.md</code> (~45 рядків) і 7 довідників (~640 рядків), з яких агент читає лише потрібні. Оберіть задачу:</p>
+  <div class="loc">
+    <div class="opts" id="cvOpts"></div>
+    <div>
+      <div class="ladder" id="cvRefs"></div>
+      <div class="out" id="cvOut" style="min-height:60px;margin-top:0"></div>
+    </div>
+  </div>
+  <div class="tip"><b>Хто кого слухає:</b> «Task skills describe the <i>process</i>; this skill describes the <i>rules</i>. If they disagree, this skill wins». А мій особистий <code>CLAUDE.local.md</code> вимагає викликати цей скіл перед будь-якою зміною в тестах, навіть в один рядок.</div>
+</div>
+</section>
+
+<!-- 15 locators -->
+<section class="slide">
+<div class="inner">
+  <div class="kicker">14 · Автоматизація · локатори</div>
   <h2>Драбина локаторів: <code style="font-size:.8em">data-cy</code> лише в крайньому разі</h2>
   <p class="lead">Скіл перевіряє кожен елемент «згори вниз» і зупиняється на першому надійному варіанті. Оберіть елемент:</p>
   <div class="loc">
@@ -458,40 +492,41 @@ th{color:var(--muted);font-weight:600;font-size:13px;text-transform:uppercase;le
 </div>
 </section>
 
-<!-- 14 jenkins -->
+<!-- 16 jenkins -->
 <section class="slide">
 <div class="inner">
-  <div class="kicker">13 · Автоматизація · CI</div>
+  <div class="kicker">15 · Автоматизація · CI</div>
   <h2><code style="font-size:.8em">jenkins-analyze-build</code>: ранковий звіт по білдах</h2>
-  <p class="lead">Через Jenkins MCP скіл бере останні білди stage-джоб, шукає в логах падіння, порівнює з учорашнім білдом і пише markdown-звіт. Він нічого не виправляє, лише класифікує. Натисніть на рядок:</p>
+  <p class="lead">Через Jenkins MCP скіл сам знаходить усі stage-джоби (без захардкодженого списку), бере білди за 24 години, шукає в логах падіння, порівнює з попереднім білдом і пише звіт. Він нічого не виправляє, лише класифікує. Натисніть на рядок:</p>
   <table class="jt" id="jt">
     <tr><th>Тест</th><th>Причина</th><th>Дія</th></tr>
   </table>
   <div class="out" id="jOut" style="min-height:90px"><span class="muted">Оберіть тест у таблиці.</span></div>
   <p class="muted" style="font-size:13.5px;margin-top:10px">🔴 Critical: впав і вчора, і сьогодні · ❌ Failed: впав і на ретраї · ⚠️ Flaky: пройшов на ретраї. Приклад з реального звіту, назви тестів узагальнені.</p>
+  <div class="tip"><b>Без мене:</b> щодня о 11:40 системний планувальник (launchd) запускає Claude Code в headless-режимі (<code>claude -p</code>) з вузьким списком дозволених інструментів. На виході три файли: markdown-звіт у базі знань, JSON з даними і HTML-сторінка, яку рендерить окремий Python-скрипт. Я відкриваю готовий звіт.</div>
 </div>
 </section>
 
-<!-- 15 fix test -->
+<!-- 17 fix test -->
 <section class="slide">
 <div class="inner">
-  <div class="kicker">14 · Автоматизація · фікс</div>
+  <div class="kicker">16 · Автоматизація · фікс</div>
   <h2><code style="font-size:.8em">playwright-fix-test</code>: виправити тест, а не баг</h2>
-  <p class="lead">Скіл іде від дешевшого до дорожчого: лог з Jenkins → локальний запуск → запуск на stage → шаблон компонента → живий DOM через MCP. Оберіть сценарій:</p>
+  <p class="lead">Скіл іде від дешевшого до дорожчого: лог з Jenkins → відтворення на stage → діагностика за довідником типових пасток → живий DOM (спершу Playwright CLI, MCP як запасний варіант). Локально лише тоді, коли фікс додає <code>data-cy</code>. Оберіть сценарій:</p>
   <div class="row" style="margin-bottom:10px"><button class="btn on" data-fx="0">Змінився UI</button><button class="btn" data-fx="1">Справжній баг</button><button class="btn" data-fx="2">Впав бекенд</button></div>
   <div class="term"><div class="top"><i></i><i></i><i></i></div><div class="body" id="fxTerm"></div></div>
   <div class="tip"><b>Ключове правило:</b> якщо зламана фіча, а не тест, скіл <b>не чіпає</b> код застосунку й не послаблює перевірку, а пише «This is a bug in the feature, not a test issue». Зміни мінімальні, без рефакторингу «заодно».</div>
 </div>
 </section>
 
-<!-- 16 specialization -->
+<!-- 18 specialization -->
 <section class="slide">
 <div class="inner">
-  <div class="kicker">15 · Патерн</div>
+  <div class="kicker">17 · Патерн · дельта</div>
   <h2>Спеціалізація: базовий скіл + «дельта»</h2>
   <p class="lead">Онбординг нового партнера (реселера з SSO-реєстрацією) повторюється регулярно і має свої типові пропуски. Замість копії скілу я написав два короткі доповнення, які посилаються на базові.</p>
   <div class="spec">
-    <div class="layer"><b><code>ado-qa-checklist</code></b><ul><li>тікет → коміт → diff</li><li>тест-дизайн</li><li>dedup</li><li>файл + задача в ADO</li></ul></div>
+    <div class="layer"><b><code>ado-qa-checklist</code></b><ul><li>тікет → коміт → diff</li><li>тест-дизайн</li><li>dedup</li><li>файл у базі знань + задача в ADO</li></ul></div>
     <div class="plus">+</div>
     <div class="layer delta"><b><code>…-new-partner</code></b> <span class="muted" style="font-size:13px">~45 рядків</span><ul><li>прочитати конфіг партнера (кольори, лого, плани)</li><li>обов'язкові зони: брендинг, кожен план окремо, лого на кожному кроці, інвайт у команду, реєстрація <i>і</i> логін окремо</li><li>останній кейс зони не вирізати на dedup</li></ul></div>
   </div>
@@ -502,17 +537,17 @@ th{color:var(--muted);font-weight:600;font-size:13px;text-transform:uppercase;le
 </div>
 </section>
 
-<!-- 17 principles -->
+<!-- 19 principles -->
 <section class="slide">
 <div class="inner">
-  <div class="kicker">16 · Принципи</div>
+  <div class="kicker">18 · Принципи</div>
   <h2>Правила, які повторюються в кожному скілі</h2>
   <p class="lead">Натисніть на картку, щоб перевернути.</p>
   <div class="grid g4" id="flips"></div>
 </div>
 </section>
 
-<!-- 18 quiz -->
+<!-- 20 quiz -->
 <section class="slide">
 <div class="inner">
   <div class="kicker">Перевірка</div>
@@ -521,7 +556,7 @@ th{color:var(--muted);font-weight:600;font-size:13px;text-transform:uppercase;le
 </div>
 </section>
 
-<!-- 19 cheat -->
+<!-- 21 cheat -->
 <section class="slide">
 <div class="inner">
   <div class="kicker">Шпаргалка</div>
@@ -536,6 +571,8 @@ th{color:var(--muted);font-weight:600;font-size:13px;text-transform:uppercase;le
     <tr><td>…-write-tests-for-new-feature</td><td>Бриф фічі</td><td>Page object + spec, 3× зелені</td><td>Рев'ю diff</td></tr>
     <tr><td>jenkins-analyze-build</td><td>«today» або білд</td><td>Звіт 🔴 ❌ ⚠️</td><td>Вирішую, хто що фіксить</td></tr>
     <tr><td>playwright-fix-test</td><td>Назва тесту / білд</td><td>Мінімальний фікс або «це баг»</td><td>Перевіряю, що assert не послаблено</td></tr>
+    <tr><td>playwright-conventions</td><td>Підтягується сам</td><td>Правила коду тестів</td><td>Дописую правило після кожної «граблі»</td></tr>
+    <tr><td>qa-knowledge-base</td><td>Будь-який результат</td><td>Запис + зона + INDEX</td><td>Питаю «що ми знаємо про X?»</td></tr>
   </table>
   <div class="tip"><b>Як почати своє:</b> візьміть задачу, яку ви пояснюєте Claude втретє. Зробіть її вручну разом з ним, потім попросіть оформити як скіл. Кожен раз, коли результат не подобається, додавайте одне правило.</div>
 </div>
@@ -594,13 +631,28 @@ const setup={
 <pre>● browser_navigate(url)
 ● browser_snapshot()      ← ролі, тексти, ref-и
 ● browser_network_requests()</pre>`},
+    {n:'🖥 Playwright CLI',d:'дослідження сторінки для тестів',o:`<b>Нове правило:</b> для автотестів сторінку спершу досліджують через Playwright CLI, а MCP лишився запасним варіантом на випадок, коли CLI чогось не вміє. Мануальний прогін чекліста, як і раніше, іде через MCP.
+<pre>$ npx playwright-cli open &lt;url&gt;
+$ npx playwright-cli snapshot
+$ npx playwright-cli eval "el =&gt; el.tagName" "getByTestId('my-btn')"</pre>`},
   ],
   R:[
     {n:'🌿 Локальний git',d:'історія комітів і diff',o:`<b>Єдине джерело історії коду.</b> Пошук комітів через ADO в цьому проєкті відхиляється, тому скіли шукають коміт локально:
 <pre>$ git log --all --oneline --grep="35xxx" -i
 $ git show 9697a92bec --stat</pre>`},
     {n:'📁 Код + тести',d:'Angular-шаблони, page objects',o:`<b>Агент читає реальний код:</b> шаблони компонентів (де стоїть <code>data-cy</code>), reducer-и, page objects і фікстури. Так він бачить і «структурні обмеження»: стани, які з тікета виглядають можливими, а в коді недосяжні.`},
-    {n:'📘 .claude/skills + CLAUDE.md',d:'рецепти і правила проєкту',o:`<b>Знання команди у файлах:</b> CLAUDE.md з командами запуску і конвенціями, 10 скілів з покроковими інструкціями та довідниками (техніки тест-дизайну, критерії якості вимог, формат звітів).`},
+    {n:'📘 AGENTS.md + CLAUDE.local.md',d:'правила команди і мої правила',o:`<b>CLAUDE.md більше немає.</b> Команда перейшла на спільний <code>AGENTS.md</code>: його читають і Codex, і Claude Code, а dev-скіли лежать у спільній папці в git. Великий старий CLAUDE.md розібрали по темах на окремі скіли, щоб не було двох джерел правил.
+<pre>AGENTS.md          ← спільні правила (у git)
+CLAUDE.local.md    ← мої QA-правила (у .gitignore)
+.claude/skills/    ← 12 моїх QA-скілів</pre>Мій <code>CLAUDE.local.md</code> короткий: як запускати тести (stage за замовчуванням), «спершу CLI, потім MCP» і жорсткі правила для Playwright-коду.`},
+    {n:'🗂 .claude/kb',d:'база знань QA',o:`<b>Пам'ять між сесіями:</b> 121 документ (чеклісти, прогони, звіти CI, аналізи, брифи) плюс «живі» сторінки по зонах продукту і згенерований <code>INDEX.md</code>. Детально на окремому слайді.`},
+    {n:'⚙️ settings.local.json',d:'дозволи і заборони',o:`<b>Локальні налаштування, не в git.</b> Широкий allowlist для читання, git log/diff, npx і потрібних MCP-викликів, а поруч жорсткий deny, який не обійти навіть у режимі без підтверджень:
+<pre>"deny": [
+  "Bash(rm -rf:*)",
+  "Bash(sudo:*)",
+  "Bash(git push:*)",
+  "Bash(git reset --hard:*)"
+]</pre>Тобто агент може робити зміни локально, але публікує їх завжди людина.`},
   ]};
 function mkSrv(side,box){setup[side].forEach(s=>{const b=document.createElement('button');b.className='srv';b.innerHTML='<b>'+s.n+'</b><span>'+s.d+'</span>';
   b.onclick=()=>{document.querySelectorAll('#srvL .srv,#srvR .srv').forEach(x=>x.classList.remove('on'));b.classList.add('on');$('setupOut').innerHTML=s.o};$(box).appendChild(b)})}
@@ -608,8 +660,8 @@ mkSrv('L','srvL');mkSrv('R','srvR');
 
 // ---------- lifecycle map ----------
 const lanes={
-  laneM:[['ado-review-requirements','рев\'ю вимог до розробки','r',5],['ado-qa-checklist','тікет + diff → чекліст','w',6],['ado-qa-checklist-new-partner','дельта для онбордингу партнера','w',16],['qa-manual-run','прогін чекліста в браузері','w',10],['ado-create-bug','баг в ADO з підтвердженням','w',11],['ado-sprint-items','що в мене в спринті','r',11]],
-  laneA:[['playwright-write-tests-for-new-feature','бриф → page object + spec','w',12],['playwright-write-tests-for-new-partner','тести для нового партнера','w',16],['jenkins-analyze-build','звіт по падіннях у CI','r',14],['playwright-fix-test','виправити тест, що падає','w',15]]};
+  laneM:[['ado-review-requirements','рев\'ю вимог до розробки','r',5],['ado-qa-checklist','тікет + diff → чекліст','w',6],['ado-qa-checklist-new-partner','дельта для онбордингу партнера','w',18],['qa-manual-run','прогін чекліста в браузері','w',10],['ado-create-bug','баг в ADO з підтвердженням','w',11],['ado-sprint-items','що в мене в спринті','r',11],['qa-knowledge-base','куди зберігати будь-який результат','w',12]],
+  laneA:[['playwright-write-tests-for-new-feature','бриф → page object + spec','w',13],['playwright-conventions','спільні правила коду тестів','r',14],['playwright-write-tests-for-new-partner','тести для нового партнера','w',18],['jenkins-analyze-build','звіт по падіннях у CI','r',16],['playwright-fix-test','виправити тест, що падає','w',17]]};
 for(const id in lanes){lanes[id].forEach((s,i)=>{const b=document.createElement('button');b.className='sk';
   b.innerHTML='<span class="n">'+String(i+1).padStart(2,'0')+'</span><div><b>'+s[0]+'</b><span>'+s[1]+'</span></div><span class="tag '+s[2]+'">'+(s[2]==='r'?'read-only':'пише')+'</span>';
   b.onclick=()=>go(s[3]-1);$(id).appendChild(b)})}
@@ -647,7 +699,7 @@ crit.forEach(([n,b,g],i)=>{const x=document.createElement('button');x.className=
 $('crit').children[3].click();
 
 // ---------- checklist pipeline ----------
-const clSt=[['🎫','Тікет','ADO MCP'],['🌿','Коміт','git log'],['🔍','Diff','git show'],['🧪','Кейси','тест-дизайн'],['✂️','Dedup','обов\'язково'],['📄','Файл','.md'],['📌','ADO-задача','за проханням']];
+const clSt=[['🎫','Тікет','ADO MCP'],['🌿','Коміт','git log'],['🔍','Diff','git show'],['🧪','Кейси','тест-дизайн'],['✂️','Dedup','обов\'язково'],['📄','Файл','.md у базі знань'],['🗂','Зона + INDEX','оновити'],['📌','ADO-задача','за проханням']];
 clSt.forEach(([e,b,s],i)=>{const d=document.createElement('div');d.className='stp';d.id='cl'+i;d.innerHTML='<b>'+e+' '+b+'</b><span>'+s+'</span>';$('clSteps').appendChild(d)});
 const clLog=[
   [0,'<span class="d">● wit_work_item(get, 35xxx) + дочірня story</span>\n  ⎿ AC: показувати «Signing you in...» на всіх екранах входу'],
@@ -655,8 +707,9 @@ const clLog=[
   [2,'<span class="d">● Bash(git show 9697a92bec -- libs/…)</span>\n  ⎿ 3 компоненти + новий ключ перекладу, 2 дублікати видалено'],
   [3,'<span class="c">◆</span> Кожен AC має відповідник у diff. Один AC (переклади) не має → Open Question'],
   [4,'<span class="c">◆</span> Dedup: прибрано дублі й недосяжні стани → 6 кейсів'],
-  [5,'<span class="ok">✓ Write(.claude/manual-qa-checklists/loader-copy-signing-you-in.md)</span>'],
-  [6,'<span class="d">  (ADO-задачу не створюю: про це не просили)</span>'],
+  [5,'<span class="ok">✓ Write(.claude/kb/records/checklists/loader-copy-signing-you-in.md)</span>'],
+  [6,'<span class="d">● Edit(.claude/kb/areas/auth-login.md)</span>  ← «як працює зараз» + рядок History\n<span class="d">● Bash(python3 .claude/kb/scripts/build-index.py)</span>\n  ⎿ <span class="ok">INDEX.md: 121 documents</span>'],
+  [7,'<span class="d">  (ADO-задачу не створюю: про це не просили)</span>'],
 ];
 let clT=null;
 $('clPlay').onclick=()=>{clearInterval(clT);let i=0;$('clTerm').innerHTML='<span class="p">></span> /ado-qa-checklist 35xxx';
@@ -745,22 +798,23 @@ $('bugFull').onclick=()=>{$('bugTitle').textContent='"Write a message" button do
 
 // ---------- write tests ----------
 const wt=[
-  ['📝','Бриф','.md у new-feature-to-test',`<span class="h"># Feature: Domain Control</span>
+  ['📝','Бриф','kb/records/briefs',`<span class="h"># Feature: Domain Control</span>
 <span class="h">## URLs</span>        /marketing/domain-control
+<span class="h">## Requirements</span>  …
 <span class="h">## Auth user</span>   state-main.json
 <span class="h">## Test scenarios</span>
 - should add a domain
 - should NOT save an invalid domain
 <span class="h">## Known UI elements</span>  …
 <span class="h">## API client for setup/teardown</span>  Yes
-<span class="h">## Special notes</span>  feature flag …`,'Якщо брифу немає, скіл не вигадує, а дає мені цей шаблон. Бриф займає 5 хвилин і знімає більшість уточнень.'],
-  ['🔍','Дослідження','Playwright MCP',`● browser_navigate("/marketing/domain-control")
-● browser_snapshot()
+<span class="h">## Special notes</span>  feature flag …`,'Брифи лежать у <code>.claude/kb/records/briefs/</code>. Скіл ще грепає <code>INDEX.md</code> за зоною чи номером тікета і читає сторінку зони та чеклісти: так він знає очікувану поведінку. Якщо брифу немає, скіл не вигадує, а дає мені шаблон.'],
+  ['🔍','Дослідження','CLI, потім MCP',`<span class="m"># Playwright CLI на stage</span>
+$ npx playwright-cli open …/marketing/domain-control
+$ npx playwright-cli snapshot
   ⎿ button "Save Changes"
     textbox "e.g. mysite.com"
     switch (без імені!)
-● browser_evaluate(() =&gt; document
-    .querySelector('[data-cy="…"]')?.tagName)`,'Спершу дивимось на справжній DOM локально, потім пишемо код. Так немає вигаданих локаторів.'],
+<span class="m"># MCP лише якщо CLI не впорався</span>`,'Спершу дивимось на справжню сторінку на stage, потім пишемо код. Так немає вигаданих локаторів. Локальний застосунок потрібен, лише щоб перевірити доданий <code>data-cy</code>.'],
   ['🔐','Auth і setup','beforeEach / setup-проєкт',`<span class="m">Багато тестів, один юзер</span>  → storageState
 <span class="m">Кожен тест свій обʼєкт</span>     → beforeEach/afterEach
 <span class="m">Спільний обʼєкт на всі спеки</span> → окремий setup-проєкт
@@ -772,7 +826,8 @@ const wt=[
     <span class="k">await</span> this.action.waitSkeletonLoaderDisappears();
   });
 }`,'Кожен метод обгорнутий у test.step, без коментарів у коді, без «про всяк випадок» методів. Після дії, що шле запит, обов\'язково waitForResponse.'],
-  ['🟢','Запуск 3×','стабільність',`$ ENV=local npx playwright test --project=… spec.ts --retries=0
+  ['🟢','Запуск 3×','стабільність',`$ ENV=stage npx playwright test spec.ts \\
+    --project=… --workers=1 --retries=0
   <span class="g">✓ 4 passed</span>  (×3)`,'Мінімум три зелені прогони поспіль, жодного waitForTimeout. Якщо тест нестабільний, це ще не готово.'],
 ];
 wt.forEach(([e,b,s,code,info],i)=>{const d=document.createElement('div');d.className='stp';d.style.cursor='pointer';d.innerHTML='<b>'+e+' '+b+'</b><span>'+s+'</span>';
@@ -812,15 +867,15 @@ const fx=[
 `<span class="p">></span> /playwright-fix-test "should save domain" з білда #212
 <span class="d">● searchBuildLog("should save domain", contextLines: 20)</span>
   ⎿ <span class="er">TimeoutError: getByTestId('save-btn') not found</span>
-<span class="d">● Bash(ENV=local npx playwright test -g "should save domain")</span>
-  ⎿ <span class="er">1 failed</span>   ← відтворюється локально
+<span class="d">● Bash(ENV=stage npx playwright test -g "should save domain" --workers=1 --retries=0)</span>
+  ⎿ <span class="er">1 failed</span>   ← відтворюється на stage
 <span class="d">● Grep("save-btn", libs/…/*.html)</span>
   ⎿ атрибут зник: кнопку переписали на новий компонент
 <span class="d">● Edit(domain-control.page.ts)</span> → clickByRoleAndText('button','Save Changes')
 <span class="d">● Bash(… --retries=0)</span>  <span class="ok">✓ 1 passed</span>
 <span class="ok">Класифікація: UI change. Оновив page object, перевірку не змінював.</span>`,
 `<span class="p">></span> /playwright-fix-test "should apply 19$ offer"
-<span class="d">● Bash(ENV=local npx playwright test -g "should apply 19$ offer")</span>
+<span class="d">● Bash(ENV=stage npx playwright test -g "should apply 19$ offer" --retries=0)</span>
   ⎿ <span class="er">expect(price).toHaveText('$19') — received '$49'</span>
 <span class="d">● Read(upgrade-modal.component.ts)</span>
   ⎿ знижка не застосовується, якщо план річний
@@ -841,6 +896,87 @@ function showFx(i){document.querySelectorAll('[data-fx]').forEach(b=>b.classList
 document.querySelectorAll('[data-fx]').forEach(b=>b.onclick=()=>showFx(+b.dataset.fx));
 showFx(0);
 
+// ---------- knowledge base ----------
+const kb=[
+  ['📇 INDEX.md','згенерований зміст',`<span class="h"># Knowledge Base Index</span>
+<span class="m">Generated by build-index.py — do not edit by hand.</span>
+Documents: 121
+
+- 2026-10-22 · <span class="k">auth/login</span> · Login &amp; Authentication — flow types,
+    seamless, magic link, MFA, password reset
+- 2026-10-20 · <span class="k">crm/website-builder</span> · Website Builder — templates,
+    section editors, global settings
+- 2026-10-08 · <span class="k">auth/login</span> · ADO 35xxx · Loader Copy — QA Checklist`,'Один рядок на документ: дата · зони · тікет · назва — summary. Агент грепає індекс за зоною, номером тікета чи словом і відкриває лише потрібні файли.'],
+  ['🏷 AREAS.md','словник зон',`| Slug                    | Covers                          |
+|-------------------------|---------------------------------|
+| <span class="k">crm/contacts</span>            | Contacts, lists, import, search |
+| <span class="k">crm/website-builder</span>     | Landing pages builder           |
+| <span class="k">auth/login</span>              | Login, seamless, magic link     |
+| <span class="k">pwa/training</span>            | PWA team training               |
+| <span class="k">billing/plans-pricing</span>   | Plan codes, prices, trials      |`,'Контрольований список слагів, зібраний з дерева продукту. Вигадати нову зону не можна: спершу її додають сюди, інакше скрипт індексу видасть WARN.'],
+  ['🧭 areas/','21 «жива» сторінка',`**Where:** routes / apps / libs
+**Access:** plans, roles, toggles
+**Last verified:** 2026-10-20 (stage) — &lt;record&gt;
+
+<span class="h">## How it works now</span>
+<span class="h">## Roles, plans, toggles</span>
+<span class="h">## Known bugs &amp; quirks</span>
+<span class="h">## Test coverage</span>
+<span class="h">## Open questions</span>
+<span class="h">## History</span>`,'Сторінка відповідає на питання «як ця зона працює <b>зараз</b>». Після кожного нового запису скіл оновлює її: замінює застаріле правило, а не дописує суперечність, і додає рядок у History. Лише те, що підтвердив запис або код.'],
+  ['🗺 reference/','7 карт і каталогів',`product-decomposition.md
+sign-up-and-login-flows-catalog.md
+login-types-partner-matrix.md
+partners-login-pages-and-sign-up-urls.md
+plan-code-annual-discount-signup-map.md
+&lt;partner&gt;-plans-and-pricing.md
+…`,'Довідники, які теж оновлюються на місці: дерево продукту, каталог флоу реєстрації й логіну, де лежать ціни планів. Саме з них агент дізнається, що «зона» чи «флоу» означає в цьому продукті.'],
+  ['📦 records/','незмінні результати',`records/
+├── checklists/   <span class="g">69</span>  ← ado-qa-checklist
+├── briefs/        <span class="g">6</span>  ← брифи для автотестів
+├── analysis/      <span class="g">2</span>  ← ado-review-requirements
+├── automation/    <span class="g">5</span>  ← аудити й плани автоматизації
+└── runs/
+    ├── manual/       ← qa-manual-run + скріни
+    ├── automated/
+    └── jenkins/      ← щоденні звіти: md + json + html`,'Результат сесії пишеться один раз і далі не редагується. Імена передбачувані: <code>&lt;feature-slug&gt;.md</code>, для прогонів ще дата й час. Скіли, які раніше писали кожен у свою папку, тепер пишуть сюди.'],
+  ['🧾 Frontmatter','обов\'язкова шапка',`<span class="m">---</span>
+<span class="k">title:</span> "Loader Copy: Signing You In"
+<span class="k">type:</span> checklist
+<span class="k">areas:</span> [signup/seamless-register, auth/login]
+<span class="k">ado:</span> [35xxx]
+<span class="k">commits:</span> [9697a92bec]
+<span class="k">date:</span> 2026-10-08
+<span class="k">status:</span> current     <span class="m"># current | superseded | draft</span>
+<span class="k">summary:</span> "Shared loader copy on three sign-in screens"
+<span class="m">---</span>`,'З цих полів скрипт будує індекс. Коли новий запис замінює старий, у старому міняють лише одне: <code>status: superseded</code> і посилання на новий.'],
+  ['⚙️ build-index.py','перебудова індексу',`$ python3 .claude/kb/scripts/build-index.py
+<span class="g">INDEX.md: 121 documents</span>
+
+<span class="m"># або, якщо щось не так:</span>
+<span class="y">WARN unknown area:</span> crm/chat
+<span class="y">WARN no frontmatter:</span> records/checklists/x.md`,'Запускається після будь-якої зміни в базі. Скіл не має права завершитись, поки є хоч один WARN. Наприкінці він повідомляє збережені шляхи, оновлені зони й рядок результату індексу.'],
+];
+kb.forEach(([n,s2,code,info])=>{const b=document.createElement('button');b.className='btn';b.innerHTML=n+'<small style="display:block;color:inherit;opacity:.75;font-size:12.5px">'+s2+'</small>';
+  b.onclick=()=>{[...$('kbOpts').children].forEach(x=>x.classList.remove('on'));b.classList.add('on');$('kbCode').innerHTML=code;$('kbOut').innerHTML=info};$('kbOpts').appendChild(b)});
+$('kbOpts').children[0].click();
+
+// ---------- conventions ----------
+const cvRefs=[['architecture-and-facade.md',145,'page objects, фасад, фікстури, API-клієнти'],['selectors-and-components.md',125,'селектори, data-cy, nm-* компоненти'],['spec-structure-and-data.md',143,'структура спеки, дані, setup, auth'],['running-and-debugging.md',86,'запуск, середовище, CLI/MCP, діагностика'],['waits-and-races.md',64,'очікування, гонки, async-валідатори'],['pwa-patterns.md',53,'усе під playwright/pwa/'],['pitfalls.md',22,'відомі пастки']];
+const cvTasks=[
+  ['Новий тест з нуля',[0,1,2,3],'<b>playwright-write-tests-for-new-feature</b> читає перші три довідники плюс запуск і дебаг. Решту лише якщо фіча в PWA або має асинхронні збереження.'],
+  ['Тест падає в CI',[3,4,6],'<b>playwright-fix-test</b> починає із запуску й діагностики, очікувань і пасток. Селектори чи page objects відкриває, тільки якщо фікс їх зачіпає.'],
+  ['Додати data-cy у шаблон',[1],'Лише довідник про селектори: коли data-cy дозволено, як його називати і що логіку шаблону не чіпаємо.'],
+  ['Тест у PWA',[5,3],'PWA має свою авторизацію, навігацію, теги платформ і поліфіл буфера обміну локально. Усе це в окремому довіднику.'],
+  ['Дивне падіння',[6],'Короткий список симптомів, на яких ми вже обпікались. Його поповнюю після кожного «а, так ось чому».'],
+];
+cvRefs.forEach(([f,l,d])=>{const x=document.createElement('div');x.className='rung';x.innerHTML='<b>'+l+'</b><span><code>'+f+'</code> <span class="muted" style="font-size:13px">'+d+'</span></span>';$('cvRefs').appendChild(x)});
+cvTasks.forEach(([n,idx,info])=>{const b=document.createElement('button');b.className='btn';b.textContent=n;
+  b.onclick=()=>{[...$('cvOpts').children].forEach(x=>x.classList.remove('on'));b.classList.add('on');
+    [...$('cvRefs').children].forEach((r2,i)=>{r2.classList.toggle('on',idx.includes(i));r2.classList.toggle('skip',!idx.includes(i))});
+    const n2=idx.reduce((a,i)=>a+cvRefs[i][1],0);$('cvOut').innerHTML='<p>'+info+'</p><p class="muted" style="font-size:13.5px">Прочитано ~'+n2+' з ~638 рядків довідників.</p>'};$('cvOpts').appendChild(b)});
+$('cvOpts').children[0].click();
+
 // ---------- flip cards ----------
 const flips=[
   ['🚫 Не вигадуй','ні даних, ні хешів, ні цін','Немає коміту → питай хеш. Немає опису бага → питай. Немає ціни плану в конфігу → не пиши її в тест.'],
@@ -848,7 +984,7 @@ const flips=[
   ['🧭 Одне джерело на тип даних','ADO для тікетів, git для коду','Жорсткий розподіл прибирає ціле сімейство помилок і відмов, які раніше з\'їдали час.'],
   ['🙋 Чесні статуси','«needs human judgment» це нормально','Агент не перетворює «скрін виглядає ок» на «verified». Краще чесне «подивіться наживо».'],
   ['🐞 Тест ≠ фіча ≠ інфра','завжди розрізняти','У кожному CI-скілі три різні результати: виправити тест, завести баг, передати бекенду.'],
-  ['📂 Сталий шлях виходу','.claude/manual-qa-checklists/…','Кожен результат лежить у передбачуваному місці. Не перезаписує старий файл, а додає суфікс.'],
+  ['📂 Одне місце для результатів','.claude/kb/records/…','Кожен результат має frontmatter і лежить у базі знань. Старий запис не перезаписується: новий файл, а старий позначається superseded.'],
   ['🔐 Секрети не читаємо','.env лише через скрипт','Агент отримує тільки потрібну змінну, а не вміст файлу. Тільки тестові акаунти, тільки stage.'],
   ['✂️ Мінімум змін','без рефакторингу «заодно»','Фікс тесту чіпає лише зламане. Жодних спекулятивних методів у page objects.'],
 ];
@@ -859,6 +995,7 @@ const quiz=[
   {q:'Чому ado-qa-checklist читає diff коміту, а не лише текст тікета?',o:['Так швидше','Щоб кейси відповідали тому, що реально зроблено, і ловили розбіжності з AC','Бо тікети в ADO завжди порожні'],a:1,w:'Diff показує реальні умови видимості, гілки помилок і недосяжні стани. Розбіжності «AC ↔ код» ідуть в Open Questions.'},
   {q:'Агент пройшов пункт «анімація виглядає плавно» і зробив скрін. Який статус?',o:['Verified by agent','Needs human judgment','Failed'],a:1,w:'Візуальне і суб\'єктивне агент не підтверджує. Він лише доводить людину до моменту оцінки швидше.'},
   {q:'Тест у CI впав з 422 від API і так само вчора. Що робить playwright-fix-test?',o:['Міняє очікуваний статус на 422','Класифікує як проблему бекенду і зупиняється','Додає retries: 5'],a:1,w:'Це не баг тесту. Послабити перевірку означало б сховати реальну проблему.'},
+  {q:'Три скіли для автотестів повторюють ті самі правила локаторів. Що краще?',o:['Скопіювати правила в кожен скіл','Винести правила в базовий скіл, а в задачних лишити лише процес','Записати все в один скіл на 1000 рядків'],a:1,w:'Так зроблено з playwright-conventions: одне джерело правил, довідники читаються лише за потреби, задачні скіли короткі.'},
   {q:'Чекліст щоразу містить зайвий розділ, який вам не потрібен. Що краще?',o:['Видаляти його руками кожного разу','Додати правило в SKILL.md','Перейти на іншу модель'],a:1,w:'Скіл це живий документ. Одне правило виправляє всі наступні результати.'},
 ];
 let score=0;
