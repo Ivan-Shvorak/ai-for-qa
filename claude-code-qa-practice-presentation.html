@@ -1,0 +1,880 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claude Code у роботі QA</title>
+<style>
+:root{
+  --bg:#0f1115; --bg2:#161a22; --card:#1c212b; --line:#2a3140;
+  --text:#e9ecf2; --muted:#9aa3b5; --accent:#e07a4f; --accent2:#6fa8ff;
+  --green:#4fc38a; --red:#ef6464; --yellow:#e8c25a; --purple:#b48cff;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+:root[data-theme="light"]{
+  --bg:#f6f4ef; --bg2:#ece8df; --card:#ffffff; --line:#ddd6c8;
+  --text:#1d1f24; --muted:#5f6573; --accent:#c75a2c; --accent2:#2d6fd6;
+  --green:#1f9a5f; --red:#c93a3a; --yellow:#a77d0b; --purple:#7a4ed6;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--text);font:17px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden}
+.deck{height:100%;position:relative}
+.slide{position:absolute;inset:0;padding:56px 72px 90px;display:flex;flex-direction:column;justify-content:center;
+  opacity:0;transform:translateX(40px);pointer-events:none;transition:opacity .35s,transform .35s;overflow-y:auto}
+.slide.active{opacity:1;transform:none;pointer-events:auto}
+.slide.prev{transform:translateX(-40px)}
+.inner{max-width:1080px;width:100%;margin:0 auto}
+h1{font-size:clamp(34px,5vw,58px);line-height:1.1;margin:0 0 18px;letter-spacing:-.02em}
+h2{font-size:clamp(26px,3.4vw,40px);margin:0 0 6px;letter-spacing:-.01em}
+.kicker{color:var(--accent);font:600 13px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px}
+.lead{color:var(--muted);font-size:19px;margin:0 0 26px;max-width:860px}
+p{margin:.4em 0}
+code,.mono{font-family:var(--mono);font-size:.92em}
+code{background:var(--bg2);border:1px solid var(--line);padding:1px 6px;border-radius:5px}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.card h3{margin:0 0 6px;font-size:18px}
+.card p{color:var(--muted);margin:0;font-size:15.5px}
+.tip{border-left:4px solid var(--accent);background:var(--bg2);padding:12px 16px;border-radius:0 10px 10px 0;margin-top:20px;font-size:15.5px}
+.tip b{color:var(--accent)}
+.pill{display:inline-block;padding:3px 10px;border-radius:99px;border:1px solid var(--line);font:600 12px/1.6 var(--mono);color:var(--muted)}
+button{font:inherit;cursor:pointer}
+.btn{background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:8px 14px;font-size:15px;transition:.15s}
+.btn:hover{border-color:var(--accent)}
+.btn.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.muted{color:var(--muted)}
+
+/* title */
+.hero-tags{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}
+.hero-tags span{font:600 14px var(--mono);padding:8px 14px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+
+/* stats */
+.stats{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 18px}
+.stat b{font-size:28px;display:block;font-family:var(--mono);color:var(--accent)}
+.stat span{color:var(--muted);font-size:13px}
+
+/* lifecycle */
+.life{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+.lane{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.lane h3{margin:0 0 10px;font-size:15px;font:700 12px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.chain{display:flex;flex-direction:column;gap:8px}
+.sk{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;cursor:pointer;transition:.15s;text-align:left;color:var(--text);width:100%}
+.sk:hover{border-color:var(--accent);transform:translateX(3px)}
+.sk .n{font:700 12px var(--mono);color:var(--accent);min-width:22px}
+.sk b{font-family:var(--mono);font-size:14px;display:block}
+.sk span{color:var(--muted);font-size:13px}
+.tag{margin-left:auto;font:600 11px var(--mono);padding:2px 8px;border-radius:99px;border:1px solid var(--line);white-space:nowrap}
+.tag.r{color:var(--green);border-color:color-mix(in srgb,var(--green) 50%,var(--line))}
+.tag.w{color:var(--yellow);border-color:color-mix(in srgb,var(--yellow) 50%,var(--line))}
+
+/* setup hub */
+.mcp{display:grid;grid-template-columns:1fr 170px 1fr;gap:18px;align-items:center}
+.hub{background:var(--accent);color:#fff;border-radius:16px;padding:22px 16px;text-align:center;font-weight:700}
+.hub small{display:block;font-weight:400;opacity:.85;font-size:12.5px;margin-top:4px}
+.servers{display:flex;flex-direction:column;gap:10px}
+.srv{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer;transition:.15s;text-align:left;color:var(--text)}
+.srv:hover,.srv.on{border-color:var(--accent2)}
+.srv b{display:block}.srv span{color:var(--muted);font-size:13px}
+.out{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;min-height:120px;font-size:15px;margin-top:16px}
+.out pre{font:13.5px/1.55 var(--mono);white-space:pre-wrap;margin:8px 0 0;color:var(--muted)}
+
+/* anatomy */
+.anat{display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start}
+.file{background:#0b0d10;color:#d7dde8;border:1px solid #2a3140;border-radius:12px;padding:14px 18px;font:13.5px/1.6 var(--mono);white-space:pre-wrap;overflow-x:auto}
+.file .k{color:#e07a4f}.file .h{color:#6fa8ff}.file .m{color:#8a93a6}.file .g{color:#4fc38a}
+.file [data-p]{border-radius:4px;transition:.2s}
+.file [data-p].hl{background:rgba(224,122,79,.25);box-shadow:0 0 0 2px rgba(224,122,79,.6)}
+.parts{display:flex;flex-direction:column;gap:8px}
+.parts .btn{text-align:left;font-size:14px}
+.parts .btn small{display:block;color:var(--muted);font-size:12.5px}
+.parts .btn.on small{color:#fff;opacity:.9}
+.explain{margin-top:12px;font-size:15px;min-height:72px}
+
+/* criteria */
+.crit{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.crit .btn{font-size:14px;text-align:left}
+.ba{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
+.ba .card{min-height:110px}
+.label{font:700 12px var(--mono);letter-spacing:.08em;margin-bottom:6px}
+.bad{border-color:color-mix(in srgb,var(--red) 50%,var(--line))}.bad .label{color:var(--red)}
+.good{border-color:color-mix(in srgb,var(--green) 50%,var(--line))}.good .label{color:var(--green)}
+.ba .card p{color:var(--text)}
+
+/* steps / loop */
+.steps{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 14px}
+.stp{flex:1;min-width:110px;background:var(--card);border:2px solid var(--line);border-radius:12px;padding:10px;text-align:center;transition:.25s;font-size:13px}
+.stp b{display:block;font-size:14px}
+.stp span{color:var(--muted)}
+.stp.lit{border-color:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 22%,transparent);transform:translateY(-3px)}
+.stp.done{border-color:color-mix(in srgb,var(--green) 60%,var(--line))}
+.term{background:#0b0d10;border:1px solid #2a3140;border-radius:12px;overflow:hidden;font:14px/1.6 var(--mono);color:#d7dde8}
+.term .top{display:flex;gap:7px;padding:10px 12px;background:#161a22}
+.term .top i{width:11px;height:11px;border-radius:50%;background:#555;display:block}
+.term .top i:nth-child(1){background:#ef6464}.term .top i:nth-child(2){background:#e8c25a}.term .top i:nth-child(3){background:#4fc38a}
+.term .body{padding:14px 18px;min-height:220px;white-space:pre-wrap}
+.term .p{color:#e07a4f}.term .d{color:#8a93a6}.term .ok{color:#4fc38a}.term .c{color:#6fa8ff}.term .er{color:#ef6464}.term .y{color:#e8c25a}
+
+/* dedup */
+.dd{display:flex;flex-direction:column;gap:8px}
+.case{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-size:15px;display:flex;gap:10px;align-items:flex-start;transition:.4s}
+.case .why{margin-left:auto;font:600 11.5px var(--mono);padding:2px 8px;border-radius:99px;white-space:nowrap;opacity:0;transition:.3s}
+.case.cut{opacity:.55}
+.case.cut .txt{text-decoration:line-through;text-decoration-color:var(--red)}
+.case.cut .why{opacity:1;color:var(--red);border:1px solid color-mix(in srgb,var(--red) 50%,var(--line))}
+.case.merged{border-color:color-mix(in srgb,var(--green) 60%,var(--line))}
+.case.merged .why{opacity:1;color:var(--green);border:1px solid color-mix(in srgb,var(--green) 50%,var(--line))}
+.counter{font:700 22px var(--mono);color:var(--accent)}
+
+/* compare */
+.cmp pre{white-space:pre-wrap;font:13.5px/1.55 var(--mono);margin:8px 0 0;color:var(--text)}
+.cmp .strike{background:color-mix(in srgb,var(--red) 18%,transparent);border-radius:3px}
+
+/* checklist render */
+.md{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 20px;font-size:15px}
+.md h4{margin:10px 0 6px;font-size:15px;color:var(--accent2)}
+.md h4:first-child{margin-top:0}
+.chk{display:flex;gap:10px;align-items:flex-start;padding:4px 0;cursor:pointer}
+.chk input{margin-top:5px;accent-color:var(--accent)}
+.chk.on span{color:var(--muted);text-decoration:line-through}
+.badge{white-space:nowrap;font:700 11px var(--mono);padding:2px 8px;border-radius:6px;color:#111}
+.b-fix{background:var(--red)}.b-run{background:var(--yellow)}.b-no{background:var(--muted)}
+
+/* classify game */
+.cls{display:flex;flex-direction:column;gap:12px}
+.cls .item{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px}
+.cls .item p{margin:0 0 8px;font-size:15px}
+.cls .btn{font-size:13.5px;padding:6px 10px}
+.btn.right{background:var(--green);border-color:var(--green);color:#fff}
+.btn.wrong{background:var(--red);border-color:var(--red);color:#fff}
+.cls .why{color:var(--muted);font-size:14px;margin-top:6px;min-height:1.2em}
+
+/* confirm mock */
+.dialog{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;font-size:15px}
+.dialog .t{font:700 12px var(--mono);color:var(--muted);letter-spacing:.08em;margin-bottom:8px}
+.dialog .f{display:grid;grid-template-columns:110px 1fr;gap:6px 12px;margin:8px 0 14px}
+.dialog .f span:nth-child(odd){color:var(--muted)}
+.dlog{margin-top:12px;font:14px/1.6 var(--mono);min-height:48px}
+
+/* locator */
+.loc{display:grid;grid-template-columns:280px 1fr;gap:18px;align-items:start}
+.loc .opts{display:flex;flex-direction:column;gap:8px}
+.loc .opts .btn{text-align:left;font-size:14.5px}
+.ladder{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.rung{display:flex;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:14px;transition:.2s}
+.rung b{font-family:var(--mono);color:var(--muted);min-width:18px}
+.rung.on{border-color:var(--green);background:color-mix(in srgb,var(--green) 12%,var(--card))}
+.rung.skip{opacity:.45}
+
+/* jenkins */
+table{width:100%;border-collapse:collapse;font-size:15px}
+td,th{padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:.06em}
+.jt tr.click{cursor:pointer;transition:.15s}
+.jt tr.click:hover td,.jt tr.click.on td{background:var(--bg2)}
+.jt td:first-child{white-space:nowrap}
+.cheat td:first-child{font-weight:700;white-space:nowrap;font-family:var(--mono);font-size:14px}
+
+/* specialization */
+.spec{display:grid;grid-template-columns:1fr 60px 1fr;gap:10px;align-items:center}
+.spec .plus{text-align:center;font-size:30px;color:var(--accent);font-weight:700}
+.layer{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 18px}
+.layer.delta{border-style:dashed;border-color:var(--accent)}
+.layer ul{margin:8px 0 0;padding-left:18px;font-size:14.5px;color:var(--muted)}
+
+/* flip cards */
+.flip{perspective:900px;height:150px;cursor:pointer}
+.flip .in{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d}
+.flip.on .in{transform:rotateY(180deg)}
+.flip .fc,.flip .bc{position:absolute;inset:0;backface-visibility:hidden;border-radius:14px;border:1px solid var(--line);padding:16px;display:flex;flex-direction:column;justify-content:center}
+.flip .fc{background:var(--card)}
+.flip .fc b{font-size:17px}.flip .fc span{color:var(--muted);font-size:13px;margin-top:6px}
+.flip .bc{background:var(--bg2);transform:rotateY(180deg);font-size:14.5px}
+
+/* quiz */
+.q{margin-bottom:18px}
+.q .opts{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.q .why{color:var(--muted);font-size:14.5px;margin-top:6px;min-height:1.3em}
+.score{font:700 20px var(--mono);color:var(--accent)}
+
+/* nav */
+.nav{position:fixed;left:0;right:0;bottom:0;display:flex;align-items:center;gap:14px;padding:12px 24px;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(6px);border-top:1px solid var(--line);z-index:5}
+.progress{flex:1;height:5px;background:var(--line);border-radius:5px;overflow:hidden}
+.progress i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.count{font:600 13px var(--mono);color:var(--muted);min-width:56px;text-align:center}
+.nav .btn{padding:6px 12px}
+
+@media (max-width:820px){
+  body{overflow:auto}
+  .slide{padding:28px 16px 90px;justify-content:flex-start}
+  .g2,.g3,.g4,.mcp,.life,.anat,.ba,.loc,.spec,.crit{grid-template-columns:1fr}
+  .spec .plus{transform:rotate(90deg)}
+  .stp{min-width:45%}
+  .case{flex-wrap:wrap}
+  .case .why{margin-left:0}
+  .jt td:first-child{white-space:normal}
+}
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+<!-- 1 title -->
+<section class="slide">
+<div class="inner">
+  <div class="kicker">Лекція для QA · частина 2</div>
+  <h1>Claude Code у роботі QA:<br>як це виглядає щодня</h1>
+  <p class="lead">Не теорія, а мій реальний робочий процес на комерційному проєкті: які скіли я написав для мануального й автоматизованого тестування, що вони видають і де я як QA обов'язково лишаюсь «у циклі».</p>
+  <div class="hero-tags">
+    <span>Вимоги</span><span>Чекліст</span><span>Мануальний прогін</span><span>Баг</span><span>Автотести</span><span>CI-звіт</span><span>Фікс тесту</span>
+  </div>
+  <p style="margin-top:34px;color:var(--muted);font-size:14px">Гортайте стрілками ← → або пробілом. Майже кожен слайд можна «потикати». Назви клієнтів, адреси й доступи прибрані.</p>
+</div>
+</section>
+
+<!-- 2 setup -->
+<section class="slide">
+<div class="inner">
+  <div class="kicker">01 · Сетап</div>
+  <h2>З чим працює мій Claude Code</h2>
+  <p class="lead">Проєкт: велике Angular-монорепо (CRM + PWA) з набором Playwright-тестів, які щодня ганяються в Jenkins. Claude Code запускається в корені репозиторію і має три MCP-сервери плюс локальні інструменти. Оберіть джерело:</p>
+  <div class="mcp">
+    <div class="servers" id="srvL"></div>
+    <div class="hub">Claude Code<small>у корені репо</small></div>
+    <div class="servers" id="srvR"></div>
+  </div>
+  <div class="out" id="setupOut"><span class="muted">Натисніть на будь-яке джерело зліва чи справа.</span></div>
+</div>
+</section>
+
+<!-- 3 map -->
+<section class="slide">
+<div class="inner">
+  <div class="kicker">02 · Карта скілів</div>
+  <h2>10 скілів покривають увесь цикл тестування</h2>
+  <div class="stats">
+    <div class="stat"><b>10</b><span>скілів у .claude/skills</span></div>
+    <div class="stat"><b>38</b><span>чеклістів за ~6 тижнів</span></div>
+    <div class="stat"><b>18</b><span>звітів (CI, прогони, аналіз)</span></div>
+    <div class="stat"><b>3</b><span>MCP: ADO, Jenkins, Playwright</span></div>
+  </div>
+  <div class="life">
+    <div class="lane"><h3>🧑‍🔬 Мануальне тестування</h3><div class="chain" id="laneM"></div></div>
+    <div class="lane"><h3>🤖 Автоматизація</h3><div class="chain" id="laneA"></div></div>
+  </div>
+  <p class="muted" style="font-size:14px;margin-top:12px">Натисніть на скіл, щоб перейти до його слайду. <span class="tag r">read-only</span> нічого не змінює, <span class="tag w">пише</span> створює файли, код або тікети.</p>
+</div>
+</section>
+
+<!-- 4 anatomy -->
+<section class="slide">
+<div class="inner">
+  <div class="kicker">03 · Анатомія</div>
+  <h2>З чого складається справжній робочий скіл</h2>
+  <p class="lead">Скорочений фрагмент мого <code>ado-qa-checklist/SKILL.md</code> (повний файл ~170 рядків). Натисніть на частину праворуч, щоб підсвітити її у файлі.</p>
+  <div class="anat">
+    <div class="file" id="anatFile"><span data-p="fm"><span class="m">---</span>
+<span class="k">name:</span> ado-qa-checklist
+<span class="k">description:</span> <span data-p="desc">Given one or more Azure DevOps ticket numbers,
+  fetch the ticket(s), find the implementing commit(s)
+  in LOCAL GIT ONLY, analyze the diff ... Use when the
+  user says "analyze ticket &lt;ID&gt;", "create test cases
+  from this ticket"... This is NOT the same output as
+  qa-checklist ...</span>
+<span class="k">tools:</span> <span data-p="tools">Bash, Read, Write, Grep,
+  mcp__azure-devops__wit_work_item, ..._write</span>
+<span class="m">---</span></span>
+
+<span data-p="hard"><span class="h">**Hard rule — where each kind of data comes from:**</span>
+- ADO MCP tools are for ticket data only.
+- Never use ADO tools to search commits or PRs —
+  all code history comes from local git.</span>
+
+<span data-p="steps"><span class="h">## Step 1</span> — Load MCP tools and resolve the ticket
+<span class="h">## Step 2</span> — Find the implementing commit in local git
+<span class="h">## Step 3</span> — Analyze the diff against the AC
+<span class="h">## Step 4</span> — Design test cases (techniques stay silent)
+<span class="h">## Step 5</span> — Mandatory smart-dedup pass
+<span class="h">## Step 6</span> — Write the file</span>
+
+<span data-p="fmt"><span class="g">- [ ] User can open X when a **Product** template is selected
+- [ ] User can NOT open X when a **Video** template is selected</span></span>
+
+<span data-p="rules"><span class="h">## Rules</span>
+- Never use ADO tools for commit/PR history.
+- Only file a task in ADO if the user explicitly asks.
+- If no commit found — ask for a hash, do not fabricate.</span></div>
+    <div>
+      <div class="parts" id="parts"></div>
+      <div class="explain card" id="anatExplain"><p>Оберіть частину скілу.</p></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- 5 requirements review -->
+<section class="slide">
+<div class="inner">
+  <div class="kicker">04 · Мануал · до розробки</div>
+  <h2><code style="font-size:.8em">ado-review-requirements</code>: рев'ю вимог за 9 критеріями</h2>
+  <p class="lead">Ще до того, як фічу взяли в роботу, скіл читає Feature і дочірні User Story з ADO, ділить їх на атомарні твердження, шукає схожі тікети й коміти, а на виході дає звіт і список питань до PM. Скіл лише читає: жодних коментарів у тікетах. Оберіть критерій:</p>
+  <div class="crit" id="crit"></div>
+  <div class="ba">
+    <div class="card bad"><div class="label">✗ ПОГАНО</div><p id="cBad"></p></div>
+    <div class="card good"><div class="label">✓ ДОБРЕ</div><p id="cGood"></p></div>
+  </div>
+  <div class="tip"><b>Чому це працює:</b> звіт будується «по критеріях», а не «по вимогах», і показує лише проблеми з дослівною цитатою та номером тікета. Критерій без зауважень займає один рядок: «No issues found».</div>
+</div>
+</section>
+
+<!-- 6 checklist pipeline -->
+<section class="slide">
+<div class="inner">
+  <div class="kicker">05 · Мануал · після розробки</div>
+  <h2><code style="font-size:.8em">ado-qa-checklist</code>: від тікета до чекліста за кодом</h2>
+  <p class="lead">Головна ідея: чекліст спирається на те, що <b>реально зроблено в коді</b>, а не лише на текст тікета. Тому скіл знаходить коміт у локальному git і читає diff.</p>
+  <div class="steps" id="clSteps"></div>
+  <div class="row" style="margin-bottom:10px"><button class="btn on" id="clPlay">▶ Програти</button></div>
+  <div class="term"><div class="top"><i></i><i></i><i></i></div><div class="body" id="clTerm"><span class="p">></span> /ado-qa-checklist 35xxx</div></div>
+</div>
+</section>
+
+<!-- 7 dedup -->
+<section class="slide">
+<div class="inner">
+  <div class="kicker">06 · Мануал · дедуплікація</div>
+  <h2>Обов'язковий smart-dedup: менше кейсів, те саме покриття</h2>
+  <p class="lead">Реальний випадок: фічу «Командний чат» вимкнули на UI одною глобальною константою. Перша чернетка мала 7 кейсів. Скіл перечитав diff і прибрав те, що неможливо або дублюється. Натисніть кнопку.</p>
+  <div class="row" style="align-items:center;margin-bottom:12px"><button class="btn on" id="ddRun">▶ Запустити dedup</button><button class="btn" id="ddReset">↺ Скинути</button><span class="counter" id="ddCount">7 кейсів</span></div>
+  <div class="dd" id="dd"></div>
+  <div class="tip"><b>Правило скілу:</b> ніколи не вирізати кейс, який є <i>єдиним</i> покриттям окремого критерію приймання чи окремого класу даних. Якщо сумніваєшся, чи це дубль, залишай обидва.</div>
+</div>
+</section>
+
+<!-- 8 evolution -->
+<section class="slide">
+<div class="inner">
+  <div class="kicker">07 · Скіл живе</div>
+  <h2>Не виправляйте результат руками, виправляйте скіл</h2>
+  <p class="lead">Ранні чеклісти мали зайве: назви технік тест-дизайну у вступі і великий розділ «Consolidation Notes» про те, що вирізали. Читати це QA, який проганяє чекліст, не треба. Тож я додав правила в скіл, і всі наступні чеклісти стали чистими.</p>
+  <div class="row" style="margin-bottom:12px"><button class="btn on" data-ev="0">Вересень: було</button><button class="btn" data-ev="1">Жовтень: стало</button></div>
+  <div class="grid g2 cmp">
+    <div class="card" id="evOut" style="grid-column:1/-1"></div>
+  </div>
+  <div class="tip"><b>Звичка:</b> щоразу, коли вихід скілу дратує, питайте себе «яке правило я забув записати?». Наприклад: «Write in English», «одна дія на рядок», «пусті розділи не додавати», «вступ максимум 2 речення».</div>
+</div>
+</section>
+
+<!-- 9 output -->
+<section class="slide">
+<div class="inner">
+  <div class="kicker">08 · Мануал · результат</div>
+  <h2>Як виглядає готовий чекліст</h2>
+  <p class="lead">Реальний чекліст (скорочено, назви партнерів прибрані): заміна тексту лоадера на «Signing you in...». Галочки можна ставити: так ним і користуються під час прогону.</p>
+  <div class="grid g2">
+    <div class="md" id="mdList"></div>
+    <div class="md">
+      <h4>Impacted Automated Tests</h4>
+      <table style="font-size:13.5px">
+        <tr><th>Spec</th><th>Дія</th><th>Чому</th></tr>
+        <tr><td><code>partners-*.spec.ts</code></td><td><span class="badge b-run">Run</span></td><td>Проходять через змінений екран, але текст не перевіряють</td></tr>
+        <tr><td><code>*-sign-in.spec.ts</code> (magic link)</td><td><span class="badge b-run">Run</span></td><td>Ключ перекладу об'єднано, значення те саме</td></tr>
+        <tr><td>PWA seamless login</td><td><span class="badge b-no">No action</span></td><td>Немає спеки, що покриває цю сторінку</td></tr>
+      </table>
+      <h4 style="margin-top:14px">Open Questions</h4>
+      <p class="muted" style="font-size:14px">У коміті є лише англійський рядок. AC вимагає переклад на всі мови в цьому релізі. Чи синхронізація перекладів уже відбулась?</p>
+    </div>
+  </div>
+  <div class="tip"><b>Три корисні бонуси:</b> таблиця автотестів, які треба <span class="badge b-fix">Fix</span> / <span class="badge b-run">Run</span>, розбіжності «AC ↔ код» як Open Questions, а за проханням скіл ще й створює в ADO задачу «[QA] Testing on Stage» з цим чеклістом.</div>
+</div>
+</section>
+
+<!-- 10 manual run -->
+<section class="slide">
+<div class="inner">
+  <div class="kicker">09 · Мануал · прогін у браузері</div>
+  <h2><code style="font-size:.8em">qa-manual-run</code>: агент клікає, людина оцінює</h2>
+  <p class="lead">Через Playwright MCP агент проходить чекліст як користувач: клікає, заповнює форми, робить скріни, дивиться консоль і мережеві запити. Але кожен пункт отримує чесний статус. Спробуйте класифікувати самі:</p>
+  <div class="cls" id="cls"></div>
+  <div class="tip"><b>Безпека:</b> лише stage, чистий профіль браузера, лише тестові акаунти. Файл <code>.env.stage</code> агенту читати заборонено: потрібні URL він дістає скриптом, що не друкує вміст файлу.</div>
+</div>
+</section>
+
+<!-- 11 bug + sprint -->
+<section class="slide">
+<div class="inner">
+  <div class="kicker">10 · Мануал · ADO</div>
+  <h2>Баги і спринт: людина завжди «в циклі»</h2>
+  <p class="lead"><code>ado-create-bug</code> створює баг у спринті команди, а <code>ado-sprint-items</code> показує, що в мене в роботі. Перший пише в спільну систему, тому має жорсткі правила.</p>
+  <div class="grid g2">
+    <div>
+      <div class="dialog">
+        <div class="t">CLAUDE CODE · ПІДТВЕРДЖЕННЯ</div>
+        Створюю Bug · моя команда · поточний спринт:
+        <div class="f"><span>Title</span><span id="bugTitle">—</span><span>Description</span><span id="bugDesc">—</span><span>Severity</span><span>за замовчуванням</span></div>
+        <div class="row"><button class="btn" id="bugAsk">Попросити «створи баг»</button><button class="btn" id="bugFull">Дати назву й опис</button></div>
+        <div class="dlog" id="bugLog"></div>
+      </div>
+    </div>
+    <div class="grid" style="gap:12px">
+      <div class="card"><h3>🚫 Ніколи не вигадує</h3><p>Назва та опис беруться лише з моїх слів. Якщо опису немає, скіл питає: «Який опис, чи залишити порожнім?»</p></div>
+      <div class="card"><h3>🧭 Шлях спринту не вгадує</h3><p>Ітерацію завжди отримує через ADO API, а не пише рядок «з голови».</p></div>
+      <div class="card"><h3>✍️ Лише створення</h3><p>Оновлювати чи закривати чужі тікети цим скілом заборонено.</p></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- 12 write tests -->
+<section class="slide">
+<div class="inner">
+  <div class="kicker">11 · Автоматизація · нова фіча</div>
+  <h2><code style="font-size:.8em">playwright-write-tests-for-new-feature</code></h2>
+  <p class="lead">Я кладу короткий бриф у <code>.claude/new-feature-to-test/</code>, а скіл спершу досліджує сторінку через Playwright MCP і лише потім пише код. Найбільший скіл (~390 рядків), бо в ньому зібрані всі «граблі» нашого фреймворку.</p>
+  <div class="steps" id="wtSteps"></div>
+  <div class="grid g2">
+    <div class="file" id="wtFile" style="min-height:250px"></div>
+    <div class="card" id="wtInfo"><p>Натисніть на крок угорі.</p></div>
+  </div>
+</div>
+</section>
+
+<!-- 13 locators -->
+<section class="slide">
+<div class="inner">
+  <div class="kicker">12 · Автоматизація · локатори</div>
+  <h2>Драбина локаторів: <code style="font-size:.8em">data-cy</code> лише в крайньому разі</h2>
+  <p class="lead">Скіл перевіряє кожен елемент «згори вниз» і зупиняється на першому надійному варіанті. Оберіть елемент:</p>
+  <div class="loc">
+    <div class="opts" id="locOpts"></div>
+    <div>
+      <div class="ladder" id="ladder"></div>
+      <div class="file" id="locCode" style="min-height:90px"></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- 14 jenkins -->
+<section class="slide">
+<div class="inner">
+  <div class="kicker">13 · Автоматизація · CI</div>
+  <h2><code style="font-size:.8em">jenkins-analyze-build</code>: ранковий звіт по білдах</h2>
+  <p class="lead">Через Jenkins MCP скіл бере останні білди stage-джоб, шукає в логах падіння, порівнює з учорашнім білдом і пише markdown-звіт. Він нічого не виправляє, лише класифікує. Натисніть на рядок:</p>
+  <table class="jt" id="jt">
+    <tr><th>Тест</th><th>Причина</th><th>Дія</th></tr>
+  </table>
+  <div class="out" id="jOut" style="min-height:90px"><span class="muted">Оберіть тест у таблиці.</span></div>
+  <p class="muted" style="font-size:13.5px;margin-top:10px">🔴 Critical: впав і вчора, і сьогодні · ❌ Failed: впав і на ретраї · ⚠️ Flaky: пройшов на ретраї. Приклад з реального звіту, назви тестів узагальнені.</p>
+</div>
+</section>
+
+<!-- 15 fix test -->
+<section class="slide">
+<div class="inner">
+  <div class="kicker">14 · Автоматизація · фікс</div>
+  <h2><code style="font-size:.8em">playwright-fix-test</code>: виправити тест, а не баг</h2>
+  <p class="lead">Скіл іде від дешевшого до дорожчого: лог з Jenkins → локальний запуск → запуск на stage → шаблон компонента → живий DOM через MCP. Оберіть сценарій:</p>
+  <div class="row" style="margin-bottom:10px"><button class="btn on" data-fx="0">Змінився UI</button><button class="btn" data-fx="1">Справжній баг</button><button class="btn" data-fx="2">Впав бекенд</button></div>
+  <div class="term"><div class="top"><i></i><i></i><i></i></div><div class="body" id="fxTerm"></div></div>
+  <div class="tip"><b>Ключове правило:</b> якщо зламана фіча, а не тест, скіл <b>не чіпає</b> код застосунку й не послаблює перевірку, а пише «This is a bug in the feature, not a test issue». Зміни мінімальні, без рефакторингу «заодно».</div>
+</div>
+</section>
+
+<!-- 16 specialization -->
+<section class="slide">
+<div class="inner">
+  <div class="kicker">15 · Патерн</div>
+  <h2>Спеціалізація: базовий скіл + «дельта»</h2>
+  <p class="lead">Онбординг нового партнера (реселера з SSO-реєстрацією) повторюється регулярно і має свої типові пропуски. Замість копії скілу я написав два короткі доповнення, які посилаються на базові.</p>
+  <div class="spec">
+    <div class="layer"><b><code>ado-qa-checklist</code></b><ul><li>тікет → коміт → diff</li><li>тест-дизайн</li><li>dedup</li><li>файл + задача в ADO</li></ul></div>
+    <div class="plus">+</div>
+    <div class="layer delta"><b><code>…-new-partner</code></b> <span class="muted" style="font-size:13px">~45 рядків</span><ul><li>прочитати конфіг партнера (кольори, лого, плани)</li><li>обов'язкові зони: брендинг, кожен план окремо, лого на кожному кроці, інвайт у команду, реєстрація <i>і</i> логін окремо</li><li>останній кейс зони не вирізати на dedup</li></ul></div>
+  </div>
+  <div class="grid g2" style="margin-top:16px">
+    <div class="card"><h3>Те саме для автотестів</h3><p><code>playwright-write-tests-for-new-partner</code> знає, які 4 файли редагувати, бере плани з конфігу і пише функціональний тест з випадковим планом та скріншот-тести. Тести не запускає: це я роблю сам.</p></div>
+    <div class="card"><h3>Чому не один великий скіл</h3><p>Короткий скіл легше підтримувати, і він не «роздуває» контекст, коли задача звичайна. Дельта додає лише те, що загальний аналіз diff зазвичай пропускає.</p></div>
+  </div>
+</div>
+</section>
+
+<!-- 17 principles -->
+<section class="slide">
+<div class="inner">
+  <div class="kicker">16 · Принципи</div>
+  <h2>Правила, які повторюються в кожному скілі</h2>
+  <p class="lead">Натисніть на картку, щоб перевернути.</p>
+  <div class="grid g4" id="flips"></div>
+</div>
+</section>
+
+<!-- 18 quiz -->
+<section class="slide">
+<div class="inner">
+  <div class="kicker">Перевірка</div>
+  <h2>Міні-квіз <span class="score" id="score"></span></h2>
+  <div id="quiz" style="margin-top:14px"></div>
+</div>
+</section>
+
+<!-- 19 cheat -->
+<section class="slide">
+<div class="inner">
+  <div class="kicker">Шпаргалка</div>
+  <h2>Скіл → вхід → вихід → що роблю я</h2>
+  <table class="cheat" style="margin-top:14px;font-size:14.5px">
+    <tr><th>Скіл</th><th>Вхід</th><th>Вихід</th><th>Моя роль</th></tr>
+    <tr><td>ado-review-requirements</td><td>Номер Feature</td><td>Звіт + питання до PM</td><td>Ставлю питання на грумінгу</td></tr>
+    <tr><td>ado-qa-checklist</td><td>Номер тікета</td><td>Чекліст + impacted tests</td><td>Рев'ю чекліста, прогін</td></tr>
+    <tr><td>qa-manual-run</td><td>Чекліст</td><td>Звіт зі статусами й скрінами</td><td>Оцінюю «needs human judgment»</td></tr>
+    <tr><td>ado-create-bug</td><td>Мої назва й опис</td><td>Bug у поточному спринті</td><td>Даю зміст і підтверджую</td></tr>
+    <tr><td>ado-sprint-items</td><td>Фільтри</td><td>Таблиця задач</td><td>Планую день</td></tr>
+    <tr><td>…-write-tests-for-new-feature</td><td>Бриф фічі</td><td>Page object + spec, 3× зелені</td><td>Рев'ю diff</td></tr>
+    <tr><td>jenkins-analyze-build</td><td>«today» або білд</td><td>Звіт 🔴 ❌ ⚠️</td><td>Вирішую, хто що фіксить</td></tr>
+    <tr><td>playwright-fix-test</td><td>Назва тесту / білд</td><td>Мінімальний фікс або «це баг»</td><td>Перевіряю, що assert не послаблено</td></tr>
+  </table>
+  <div class="tip"><b>Як почати своє:</b> візьміть задачу, яку ви пояснюєте Claude втретє. Зробіть її вручну разом з ним, потім попросіть оформити як скіл. Кожен раз, коли результат не подобається, додавайте одне правило.</div>
+</div>
+</section>
+
+</div>
+
+<div class="nav">
+  <button class="btn" id="prev">←</button>
+  <div class="progress"><i id="prog"></i></div>
+  <div class="count" id="count"></div>
+  <button class="btn" id="next">→</button>
+  <button class="btn" id="theme" title="Тема">◐</button>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+// ---------- navigation ----------
+const slides=[...document.querySelectorAll('.slide')];
+let cur=0;
+function go(i){
+  cur=Math.max(0,Math.min(slides.length-1,i));
+  slides.forEach((s,k)=>{s.classList.toggle('active',k===cur);s.classList.toggle('prev',k<cur)});
+  $('prog').style.width=((cur+1)/slides.length*100)+'%';
+  $('count').textContent=(cur+1)+' / '+slides.length;
+  try{history.replaceState(null,'','#'+(cur+1))}catch(e){}
+}
+$('prev').onclick=()=>go(cur-1);
+$('next').onclick=()=>go(cur+1);
+document.addEventListener('keydown',e=>{
+  if(['TEXTAREA','INPUT'].includes(document.activeElement.tagName))return;
+  if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();go(cur+1)}
+  if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();go(cur-1)}
+  if(e.key==='Home')go(0); if(e.key==='End')go(slides.length-1);
+});
+let tx=null;
+document.addEventListener('touchstart',e=>tx=e.touches[0].clientX,{passive:true});
+document.addEventListener('touchend',e=>{if(tx===null)return;const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>70)go(cur+(d<0?1:-1));tx=null});
+$('theme').onclick=()=>{
+  const r=document.documentElement;r.dataset.theme=r.dataset.theme==='light'?'dark':'light';
+  try{localStorage.setItem('ai-deck-theme',r.dataset.theme)}catch(e){}
+};
+try{const t=localStorage.getItem('ai-deck-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}
+
+// ---------- setup ----------
+const setup={
+  L:[
+    {n:'🔌 Azure DevOps MCP',d:'тікети, спринти, баги',o:`<b>Тільки дані тікетів:</b> назва, критерії приймання, зв'язки Feature ↔ User Story, ітерація. Плюс створення багів і QA-задач, коли я прямо прошу.
+<pre>● wit_work_item(action: get, id: 35xxx, project: "…")
+  ⎿ Feature: "Loader copy for all partners"
+● wit_work_item(action: get, id: 35xxx)   ← дочірня story</pre>`},
+    {n:'🔌 Jenkins MCP',d:'білди, логи, результати тестів',o:`<b>CI без браузера:</b> список білдів джоби, падаючі тести, пошук по логу.
+<pre>● getTestResults(job: "e2e-stage-pwa", build: 148, onlyFailing: true)
+● searchBuildLog(pattern: "✘", contextLines: 8)</pre>`},
+    {n:'🔌 Playwright MCP',d:'живий браузер',o:`<b>Очі агента:</b> відкрити сторінку, зняти accessibility-дерево, клікнути, перевірити DOM, консоль і мережу. Використовується і для мануального прогону, і для дослідження сторінки перед написанням тестів.
+<pre>● browser_navigate(url)
+● browser_snapshot()      ← ролі, тексти, ref-и
+● browser_network_requests()</pre>`},
+  ],
+  R:[
+    {n:'🌿 Локальний git',d:'історія комітів і diff',o:`<b>Єдине джерело історії коду.</b> Пошук комітів через ADO в цьому проєкті відхиляється, тому скіли шукають коміт локально:
+<pre>$ git log --all --oneline --grep="35xxx" -i
+$ git show 9697a92bec --stat</pre>`},
+    {n:'📁 Код + тести',d:'Angular-шаблони, page objects',o:`<b>Агент читає реальний код:</b> шаблони компонентів (де стоїть <code>data-cy</code>), reducer-и, page objects і фікстури. Так він бачить і «структурні обмеження»: стани, які з тікета виглядають можливими, а в коді недосяжні.`},
+    {n:'📘 .claude/skills + CLAUDE.md',d:'рецепти і правила проєкту',o:`<b>Знання команди у файлах:</b> CLAUDE.md з командами запуску і конвенціями, 10 скілів з покроковими інструкціями та довідниками (техніки тест-дизайну, критерії якості вимог, формат звітів).`},
+  ]};
+function mkSrv(side,box){setup[side].forEach(s=>{const b=document.createElement('button');b.className='srv';b.innerHTML='<b>'+s.n+'</b><span>'+s.d+'</span>';
+  b.onclick=()=>{document.querySelectorAll('#srvL .srv,#srvR .srv').forEach(x=>x.classList.remove('on'));b.classList.add('on');$('setupOut').innerHTML=s.o};$(box).appendChild(b)})}
+mkSrv('L','srvL');mkSrv('R','srvR');
+
+// ---------- lifecycle map ----------
+const lanes={
+  laneM:[['ado-review-requirements','рев\'ю вимог до розробки','r',5],['ado-qa-checklist','тікет + diff → чекліст','w',6],['ado-qa-checklist-new-partner','дельта для онбордингу партнера','w',16],['qa-manual-run','прогін чекліста в браузері','w',10],['ado-create-bug','баг в ADO з підтвердженням','w',11],['ado-sprint-items','що в мене в спринті','r',11]],
+  laneA:[['playwright-write-tests-for-new-feature','бриф → page object + spec','w',12],['playwright-write-tests-for-new-partner','тести для нового партнера','w',16],['jenkins-analyze-build','звіт по падіннях у CI','r',14],['playwright-fix-test','виправити тест, що падає','w',15]]};
+for(const id in lanes){lanes[id].forEach((s,i)=>{const b=document.createElement('button');b.className='sk';
+  b.innerHTML='<span class="n">'+String(i+1).padStart(2,'0')+'</span><div><b>'+s[0]+'</b><span>'+s[1]+'</span></div><span class="tag '+s[2]+'">'+(s[2]==='r'?'read-only':'пише')+'</span>';
+  b.onclick=()=>go(s[3]-1);$(id).appendChild(b)})}
+
+// ---------- anatomy ----------
+const parts=[
+  ['fm','Frontmatter','ім\'я, опис, інструменти','Шапка між <code>---</code>. Лише вона постійно «висить» у контексті Claude. Решта файлу підвантажується, коли задача підходить.'],
+  ['desc','Опис з тригерами','коли вмикатись і коли НІ','Опис містить фрази, якими я реально прошу («analyze ticket &lt;ID&gt;»), і явно каже, чим цей скіл <b>не є</b>. Це рятує від плутанини між схожими скілами.'],
+  ['tools','Білий список інструментів','мінімально потрібне','Скіл бачить лише потрібні інструменти. Для чекліста: читання/запис файлів і два ADO-виклики. Жодного браузера чи Jenkins.'],
+  ['hard','Жорстке правило','звідки брати які дані','Найважливіше винесено нагору. Без цього правила агент знову і знову пробував шукати коміти через ADO і отримував відмову.'],
+  ['steps','Кроки','передбачуваний процес','Нумеровані кроки роблять результат відтворюваним: щоразу той самий порядок, ті самі перевірки, той самий шлях до файлу.'],
+  ['fmt','Формат виходу','приклад, а не опис','Один рядок на кейс, «User can / User can NOT», змінний параметр жирним. Короткий приклад працює краще за абзац пояснень.'],
+  ['rules','Правила','чого не робити','Заборони на вигадування, на записи без прохання, на «тихе» перезаписування файлів. Сюди я дописую нове правило щоразу, коли вихід мене не влаштовує.'],
+];
+parts.forEach(([k,t,s,e])=>{const b=document.createElement('button');b.className='btn';b.innerHTML=t+'<small>'+s+'</small>';
+  b.onclick=()=>{[...$('parts').children].forEach(x=>x.classList.remove('on'));b.classList.add('on');
+    document.querySelectorAll('#anatFile [data-p]').forEach(x=>x.classList.toggle('hl',x.dataset.p===k));
+    $('anatExplain').innerHTML='<p>'+e+'</p>';const el=document.querySelector('#anatFile [data-p="'+k+'"]');if(el)el.scrollIntoView({block:'nearest',behavior:'smooth'})};
+  $('parts').appendChild(b)});
+
+// ---------- criteria ----------
+const crit=[
+  ['Атомарність','«Користувач може редагувати й видаляти контакт, а список оновлюється автоматично.»','Три твердження: редагувати контакт; видалити контакт; список оновлюється після редагування чи видалення.'],
+  ['Незалежність','«Тут діє та сама валідація.»','Правило валідації повністю переписане для цього поля.'],
+  ['Несуперечливість','У Feature: «доступно всім користувачам». У дочірній story: «лише для платних планів».','Одне узгоджене правило доступу, підтверджене в обох тікетах.'],
+  ['Тестованість','«Сторінка має швидко завантажуватись.»','«Основний контент видно протягом 2 секунд на профілі 3G.»'],
+  ['Повнота','Описано лише успішний сценарій.','Є стани порожньо / завантаження / помилка, межі доступу і явні «користувач НЕ може…».'],
+  ['Однозначність','«Показати відповідне повідомлення.»','Точний текст повідомлення і місце, де воно з\'являється.'],
+  ['Зв\'язок з бізнес-ціллю','Вимога без пояснення, навіщо вона.','Видно, яку проблему користувача чи бізнесу вона вирішує.'],
+  ['Здійсненність','Згадано екран чи API, якого немає в коді.','Скіл перевірив grep-ом: компонент існує, шлях до файлу вказано.'],
+  ['Межі скоупу','Незрозуміло, чи входить мобільна версія.','Явно: «PWA поза скоупом цього тікета».'],
+];
+crit.forEach(([n,b,g],i)=>{const x=document.createElement('button');x.className='btn';x.textContent=(i+1)+'. '+n;
+  x.onclick=()=>{[...$('crit').children].forEach(y=>y.classList.remove('on'));x.classList.add('on');$('cBad').textContent=b;$('cGood').textContent=g};$('crit').appendChild(x)});
+$('crit').children[3].click();
+
+// ---------- checklist pipeline ----------
+const clSt=[['🎫','Тікет','ADO MCP'],['🌿','Коміт','git log'],['🔍','Diff','git show'],['🧪','Кейси','тест-дизайн'],['✂️','Dedup','обов\'язково'],['📄','Файл','.md'],['📌','ADO-задача','за проханням']];
+clSt.forEach(([e,b,s],i)=>{const d=document.createElement('div');d.className='stp';d.id='cl'+i;d.innerHTML='<b>'+e+' '+b+'</b><span>'+s+'</span>';$('clSteps').appendChild(d)});
+const clLog=[
+  [0,'<span class="d">● wit_work_item(get, 35xxx) + дочірня story</span>\n  ⎿ AC: показувати «Signing you in...» на всіх екранах входу'],
+  [1,'<span class="d">● Bash(git log --all --oneline --grep="35xxx" -i)</span>\n  ⎿ 9697a92bec 35xxx/35xxx: Use shared loader text…'],
+  [2,'<span class="d">● Bash(git show 9697a92bec -- libs/…)</span>\n  ⎿ 3 компоненти + новий ключ перекладу, 2 дублікати видалено'],
+  [3,'<span class="c">◆</span> Кожен AC має відповідник у diff. Один AC (переклади) не має → Open Question'],
+  [4,'<span class="c">◆</span> Dedup: прибрано дублі й недосяжні стани → 6 кейсів'],
+  [5,'<span class="ok">✓ Write(.claude/manual-qa-checklists/loader-copy-signing-you-in.md)</span>'],
+  [6,'<span class="d">  (ADO-задачу не створюю: про це не просили)</span>'],
+];
+let clT=null;
+$('clPlay').onclick=()=>{clearInterval(clT);let i=0;$('clTerm').innerHTML='<span class="p">></span> /ado-qa-checklist 35xxx';
+  document.querySelectorAll('#clSteps .stp').forEach(s=>s.classList.remove('lit','done'));
+  clT=setInterval(()=>{document.querySelectorAll('#clSteps .stp.lit').forEach(s=>{s.classList.remove('lit');s.classList.add('done')});
+    if(i>=clLog.length){clearInterval(clT);return}
+    const [s,t]=clLog[i++];$('cl'+s).classList.add('lit');$('clTerm').innerHTML+='\n'+t},1000)};
+
+// ---------- dedup ----------
+const ddCases=[
+  ['User can NOT see the "Chat" option in a team\'s menu',null],
+  ['User can see "Chat" when the team has <b>enableChatAssistant = true</b>','cut','недосяжний стан'],
+  ['User can see "Chat" when the user <b>owns</b> the team and it has an AI assistant','cut','недосяжний стан'],
+  ['User is redirected from the chat URL for a team they <b>own</b>','merged','злито → «for any team»'],
+  ['User is redirected from the chat URL for a team they do <b>not own</b>','cut','та сама перевірка'],
+  ['User can NOT see the "Enable My AI Avatar" section in Team Settings',null],
+  ['User can still open other team menu options normally',null],
+];
+function ddRender(){$('dd').innerHTML='';ddCases.forEach(c=>{const d=document.createElement('div');d.className='case';d.dataset.k=c[1]||'';
+  d.innerHTML='<span>☐</span><span class="txt">'+c[0]+'</span><span class="why">'+(c[2]||'')+'</span>';$('dd').appendChild(d)});$('ddCount').textContent='7 кейсів'}
+ddRender();
+$('ddRun').onclick=()=>{ddRender();const els=[...$('dd').children].filter(e=>e.dataset.k);let n=7;
+  els.forEach((e,i)=>setTimeout(()=>{e.classList.add(e.dataset.k);if(e.dataset.k==='cut')n--;$('ddCount').textContent=n+' кейсів';
+    if(i===els.length-1)setTimeout(()=>{$('ddCount').textContent='7 → 5 кейсів'},500)},700*(i+1)))};
+$('ddReset').onclick=ddRender;
+// note: the reason column explains WHY: visibility is gated by one hardcoded constant before any per-team logic runs
+
+// ---------- evolution ----------
+const ev=[
+`<div class="label" style="color:var(--red)">ВЕРЕСЕНЬ · disable-team-chat-on-ui.md</div><pre>**Generated:** 2026-09-07 · **Pruned:** (7 → 5 cases; removed …)
+
+Team Leader Chat visibility is now gated by a single hardcoded
+constant … <span class="strike">Test design applied: equivalence partitioning
+(…), boundary/state-transition analysis (…), decision-table (…),
+and error guessing (…).</span>
+
+## Entry Point Visibility
+- [ ] User can NOT see the "Chat" option …
+
+<span class="strike">## Consolidation Notes (7 → 5 cases)
+Removed as **impossible states**: …
+Removed as **exact duplicates**: none.
+Merged (**same assertion, different trigger**): …
+Consolidated (**low marginal value**): none.</span></pre>`,
+`<div class="label" style="color:var(--green)">ЖОВТЕНЬ · loader-copy-signing-you-in.md</div><pre>**Generated:** 2026-10-08
+
+Introduced a shared "Signing you in…" translation key and pointed
+three loader screens at it.            ← 1-2 речення, без технік
+
+## Functional
+- [ ] User can see "Signing you in..." loader text …
+## UI
+- [ ] User sees the identical loader copy across partners …
+
+## Impacted Automated Tests     ← нове
+## Open Questions</pre>
+<p class="muted" style="margin-top:10px;font-size:14px">Правила, що з'явились у скілі: «never name a test design technique», «the dedup pass always runs, but its result is silent», «intro: 1-2 sentences max», «omit empty sections».</p>`];
+document.querySelectorAll('[data-ev]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-ev]').forEach(x=>x.classList.remove('on'));b.classList.add('on');$('evOut').innerHTML=ev[+b.dataset.ev]});
+$('evOut').innerHTML=ev[0];
+
+// ---------- checklist output ----------
+const md=[['Functional',['User can see "Signing you in..." instead of "Creating your account..." during seamless registration via a partner invite link','User can see "Signing you in..." while completing an email magic link login','User can see "Signing you in..." on the PWA seamless login page','User can NOT see "Creating your account..." on any loading screen']],
+  ['UI',['User sees the identical loader copy across <b>different partners\'</b> registration links','User sees the copy translated (not the raw key) in a <b>non-English</b> UI language']]];
+$('mdList').innerHTML='<div class="mono muted" style="font-size:12.5px;margin-bottom:8px"># Loader Copy: Signing You In — QA Checklist</div>'+
+  md.map(([h,l])=>'<h4>## '+h+'</h4>'+l.map(t=>'<label class="chk"><input type="checkbox"><span>'+t+'</span></label>').join('')).join('');
+$('mdList').querySelectorAll('.chk input').forEach(i=>i.onchange=()=>i.parentNode.classList.toggle('on',i.checked));
+
+// ---------- classify ----------
+const CL=['Verified by agent','Needs human judgment','Failed','Blocked'];
+const clsItems=[
+  ['Після сабміту форми реєстрації йде запит перевірки акаунта і повертає 200, у консолі 0 помилок.',0,'Є програмний «оракул»: статус запиту і консоль. Агент реально це перевірив.'],
+  ['Спінер на кнопці Sign Up має виглядати плавно, без мерехтіння.',1,'Візуальне і суб\'єктивне. Агент зробив скріни, але «виглядає нормально» вирішує людина. З реального звіту: два скріни були однакові, тож агент чесно попросив подивитись наживо.'],
+  ['Кнопка «Write a message» мала перекинути на сторінку повідомлення, але URL не змінився за 30 с.',2,'Очікування не справдилось. У звіт іде: що очікували, що сталось, скрін, консоль і мережа.'],
+  ['Пункт про командний чат неможливо перевірити: фіча вимкнена прапорцем на stage.',3,'Спробувати не вдалося через передумову. Треба написати, що саме заблокувало, а не просто «blocked».'],
+];
+clsItems.forEach(([t,a,w])=>{const d=document.createElement('div');d.className='item';d.innerHTML='<p>'+t+'</p><div class="row"></div><div class="why"></div>';
+  const r=d.querySelector('.row');CL.forEach((c,ci)=>{const b=document.createElement('button');b.className='btn';b.textContent=c;
+    b.onclick=()=>{if(d.dataset.done)return;d.dataset.done=1;if(ci===a)b.classList.add('right');else{b.classList.add('wrong');r.children[a].classList.add('right')}d.querySelector('.why').textContent=w};r.appendChild(b)});
+  $('cls').appendChild(d)});
+
+// ---------- bug ----------
+$('bugAsk').onclick=()=>{$('bugTitle').textContent='—';$('bugDesc').textContent='—';
+  $('bugLog').innerHTML='<span class="muted">Я:</span> створи баг про кнопку на сторінці команд<br><span style="color:var(--accent)">Claude:</span> Яку назву дати багу? І який опис, чи залишити його порожнім?<br><span class="muted">(нічого не створено: зміст має прийти від мене)</span>'};
+$('bugFull').onclick=()=>{$('bugTitle').textContent='"Write a message" button does not redirect';$('bugDesc').textContent='Steps: open team member with no activity → click… Expected… Actual…';
+  $('bugLog').innerHTML='<span style="color:var(--accent)">Claude:</span> Усі поля задано в одному запиті, створюю.<br><span style="color:var(--green)">✓ Bug #xxxxx · State: New · Sprint: поточний · посилання</span>'};
+
+// ---------- write tests ----------
+const wt=[
+  ['📝','Бриф','.md у new-feature-to-test',`<span class="h"># Feature: Domain Control</span>
+<span class="h">## URLs</span>        /marketing/domain-control
+<span class="h">## Auth user</span>   state-main.json
+<span class="h">## Test scenarios</span>
+- should add a domain
+- should NOT save an invalid domain
+<span class="h">## Known UI elements</span>  …
+<span class="h">## API client for setup/teardown</span>  Yes
+<span class="h">## Special notes</span>  feature flag …`,'Якщо брифу немає, скіл не вигадує, а дає мені цей шаблон. Бриф займає 5 хвилин і знімає більшість уточнень.'],
+  ['🔍','Дослідження','Playwright MCP',`● browser_navigate("/marketing/domain-control")
+● browser_snapshot()
+  ⎿ button "Save Changes"
+    textbox "e.g. mysite.com"
+    switch (без імені!)
+● browser_evaluate(() =&gt; document
+    .querySelector('[data-cy="…"]')?.tagName)`,'Спершу дивимось на справжній DOM локально, потім пишемо код. Так немає вигаданих локаторів.'],
+  ['🔐','Auth і setup','beforeEach / setup-проєкт',`<span class="m">Багато тестів, один юзер</span>  → storageState
+<span class="m">Кожен тест свій обʼєкт</span>     → beforeEach/afterEach
+<span class="m">Спільний обʼєкт на всі спеки</span> → окремий setup-проєкт
+<span class="k">Ніколи</span> не читати state-файл на рівні модуля:
+  його ще не існує під час збору тестів`,'Тут зібрані помилки, на яких ми вже обпікались: фікстури, залежні від page, не працюють у beforeAll; константи не можна експортувати зі spec-файлів.'],
+  ['🧱','Page object','test.step + openAndAssert',`<span class="k">async</span> openAndAssert(request) {
+  <span class="k">await</span> test.step(<span class="g">'open feature page'</span>, <span class="k">async</span> () =&gt; {
+    <span class="k">await</span> this.nav.visitPage(this.pagePath, request);
+    <span class="k">await</span> this.action.waitSkeletonLoaderDisappears();
+  });
+}`,'Кожен метод обгорнутий у test.step, без коментарів у коді, без «про всяк випадок» методів. Після дії, що шле запит, обов\'язково waitForResponse.'],
+  ['🟢','Запуск 3×','стабільність',`$ ENV=local npx playwright test --project=… spec.ts --retries=0
+  <span class="g">✓ 4 passed</span>  (×3)`,'Мінімум три зелені прогони поспіль, жодного waitForTimeout. Якщо тест нестабільний, це ще не готово.'],
+];
+wt.forEach(([e,b,s,code,info],i)=>{const d=document.createElement('div');d.className='stp';d.style.cursor='pointer';d.innerHTML='<b>'+e+' '+b+'</b><span>'+s+'</span>';
+  d.onclick=()=>{document.querySelectorAll('#wtSteps .stp').forEach(x=>x.classList.remove('lit'));d.classList.add('lit');$('wtFile').innerHTML=code;$('wtInfo').innerHTML='<h3>'+b+'</h3><p>'+info+'</p>'};$('wtSteps').appendChild(d)});
+$('wtSteps').children[0].click();
+
+// ---------- locators ----------
+const rungs=['Кнопка / посилання → роль + текст','Текстове поле → роль textbox + placeholder','Видимий текст → getByText / heading','data-cy (крайній випадок)'];
+const locs=[
+  ['Кнопка «Save Changes»',0,`await this.action.clickByRoleAndText(<span class="g">'button'</span>, <span class="g">'Save Changes'</span>);`],
+  ['Поле вводу з placeholder',1,`await this.action.fillFieldByRoleAndText(<span class="g">'textbox'</span>, this.namePlaceholder, value);
+<span class="m">// accessible name = placeholder, не label</span>`],
+  ['Підказка про помилку',2,`await expect(page.getByText(<span class="g">'Domain is invalid'</span>)).toBeVisible();`],
+  ['Тогл без доступного імені',3,`<span class="m">&lt;!-- додати лише атрибут, логіку не чіпати --&gt;</span>
+&lt;nm-toggle <span class="k">data-cy</span>=<span class="g">"domain-active-toggle"</span>&gt;`],
+  ['Кнопка в рядку списку за id',3,`&lt;div [attr.data-cy]=<span class="g">"'item-' + item.id"</span>&gt;
+<span class="k">await</span> page.locator(<span class="g">\`[data-cy="item-\${id}"]\`</span>).getByTestId(this.actionBtn).click();`],
+];
+rungs.forEach((r,i)=>{const d=document.createElement('div');d.className='rung';d.innerHTML='<b>'+(i+1)+'</b>'+r;$('ladder').appendChild(d)});
+locs.forEach(([n,lvl,code])=>{const b=document.createElement('button');b.className='btn';b.textContent=n;
+  b.onclick=()=>{[...$('locOpts').children].forEach(x=>x.classList.remove('on'));b.classList.add('on');
+    [...$('ladder').children].forEach((r,i)=>{r.classList.toggle('on',i===lvl);r.classList.toggle('skip',i<lvl)});$('locCode').innerHTML=code};$('locOpts').appendChild(b)});
+$('locOpts').children[0].click();
+
+// ---------- jenkins ----------
+const jrows=[
+  ['🔴','team-analytics-api.spec.ts','API: очікували 200, отримали 422','Бекенд','Чистий API-тест, та сама помилка в обох білдах. Це регресія бекенду або дані на stage, а не баг тесту. <b>Дія:</b> повідомити бекенд-команду.'],
+  ['🔴','what-to-do-next.spec.ts','waitForURL timeout 30 с','Фіча','Тест чекає саме навігацію, а вона не стається в обох білдах. Схоже на зламаний обробник кнопки чи роутинг. <b>Дія:</b> розслідувати як баг фічі.'],
+  ['❌','upgrade-after-sign-up.spec.ts','waitForResponse 90 с на AI-ендпоінт','Інфра','Учора цей крок був flaky, сьогодні впав і на ретраї. AI-сервіс на stage повільний. <b>Дія:</b> DevOps / бекенд, тест не чіпати.'],
+  ['⚠️','teams.spec.ts <i>(passed on retry #1)</i>','click timeout на кнопці видалення','Flaky','Перша спроба не дочекалась кліку, ретрай пройшов за 6 с. Класична гонка після завантаження списку. <b>Дія:</b> моніторити, якщо повториться, додати waitForResponse.'],
+];
+jrows.forEach(r=>{const tr=document.createElement('tr');tr.className='click';tr.innerHTML='<td>'+r[0]+' <code>'+r[1]+'</code></td><td>'+r[2]+'</td><td><span class="pill">'+r[3]+'</span></td>';
+  tr.onclick=()=>{document.querySelectorAll('#jt tr').forEach(x=>x.classList.remove('on'));tr.classList.add('on');$('jOut').innerHTML=r[4]};$('jt').appendChild(tr)});
+
+// ---------- fix test ----------
+const fx=[
+`<span class="p">></span> /playwright-fix-test "should save domain" з білда #212
+<span class="d">● searchBuildLog("should save domain", contextLines: 20)</span>
+  ⎿ <span class="er">TimeoutError: getByTestId('save-btn') not found</span>
+<span class="d">● Bash(ENV=local npx playwright test -g "should save domain")</span>
+  ⎿ <span class="er">1 failed</span>   ← відтворюється локально
+<span class="d">● Grep("save-btn", libs/…/*.html)</span>
+  ⎿ атрибут зник: кнопку переписали на новий компонент
+<span class="d">● Edit(domain-control.page.ts)</span> → clickByRoleAndText('button','Save Changes')
+<span class="d">● Bash(… --retries=0)</span>  <span class="ok">✓ 1 passed</span>
+<span class="ok">Класифікація: UI change. Оновив page object, перевірку не змінював.</span>`,
+`<span class="p">></span> /playwright-fix-test "should apply 19$ offer"
+<span class="d">● Bash(ENV=local npx playwright test -g "should apply 19$ offer")</span>
+  ⎿ <span class="er">expect(price).toHaveText('$19') — received '$49'</span>
+<span class="d">● Read(upgrade-modal.component.ts)</span>
+  ⎿ знижка не застосовується, якщо план річний
+<span class="y">This is a bug in the feature, not a test issue.</span>
+  Код застосунку не змінюю, assert не послаблюю.
+  Пропоную завести баг (ado-create-bug) з цими кроками.`,
+`<span class="p">></span> /playwright-fix-test e2e-stage-pwa #148
+<span class="d">● getTestResults(onlyFailingTests: true)</span>
+<span class="d">● searchBuildLog("edit-nowsite-profile", contextLines: 20)</span>
+  ⎿ <span class="er">waitForResponse timeout 60000ms: POST …/profile</span>
+  ⎿ попередні кроки пройшли, запит пішов, відповіді немає
+<span class="y">Схоже на проблему середовища (бекенд не відповідає).</span>
+  Зупиняюсь: тест не виправляю, передайте бекенду / DevOps.`];
+let fxT=null;
+function showFx(i){document.querySelectorAll('[data-fx]').forEach(b=>b.classList.toggle('on',+b.dataset.fx===i));
+  clearInterval(fxT);const lines=fx[i].split('\n');let n=0;$('fxTerm').innerHTML='';
+  fxT=setInterval(()=>{$('fxTerm').innerHTML=lines.slice(0,++n).join('\n');if(n>=lines.length)clearInterval(fxT)},260)}
+document.querySelectorAll('[data-fx]').forEach(b=>b.onclick=()=>showFx(+b.dataset.fx));
+showFx(0);
+
+// ---------- flip cards ----------
+const flips=[
+  ['🚫 Не вигадуй','ні даних, ні хешів, ні цін','Немає коміту → питай хеш. Немає опису бага → питай. Немає ціни плану в конфігу → не пиши її в тест.'],
+  ['👀 Read-only за замовчуванням','писати лише на прохання','Рев\'ю вимог, звіт по CI, список спринту нічого не змінюють. Задачу в ADO скіл створює, лише коли я прямо попросив.'],
+  ['🧭 Одне джерело на тип даних','ADO для тікетів, git для коду','Жорсткий розподіл прибирає ціле сімейство помилок і відмов, які раніше з\'їдали час.'],
+  ['🙋 Чесні статуси','«needs human judgment» це нормально','Агент не перетворює «скрін виглядає ок» на «verified». Краще чесне «подивіться наживо».'],
+  ['🐞 Тест ≠ фіча ≠ інфра','завжди розрізняти','У кожному CI-скілі три різні результати: виправити тест, завести баг, передати бекенду.'],
+  ['📂 Сталий шлях виходу','.claude/manual-qa-checklists/…','Кожен результат лежить у передбачуваному місці. Не перезаписує старий файл, а додає суфікс.'],
+  ['🔐 Секрети не читаємо','.env лише через скрипт','Агент отримує тільки потрібну змінну, а не вміст файлу. Тільки тестові акаунти, тільки stage.'],
+  ['✂️ Мінімум змін','без рефакторингу «заодно»','Фікс тесту чіпає лише зламане. Жодних спекулятивних методів у page objects.'],
+];
+flips.forEach(([a,b,c])=>{const d=document.createElement('div');d.className='flip';d.innerHTML='<div class="in"><div class="fc"><b>'+a+'</b><span>'+b+'</span></div><div class="bc">'+c+'</div></div>';d.onclick=()=>d.classList.toggle('on');$('flips').appendChild(d)});
+
+// ---------- quiz ----------
+const quiz=[
+  {q:'Чому ado-qa-checklist читає diff коміту, а не лише текст тікета?',o:['Так швидше','Щоб кейси відповідали тому, що реально зроблено, і ловили розбіжності з AC','Бо тікети в ADO завжди порожні'],a:1,w:'Diff показує реальні умови видимості, гілки помилок і недосяжні стани. Розбіжності «AC ↔ код» ідуть в Open Questions.'},
+  {q:'Агент пройшов пункт «анімація виглядає плавно» і зробив скрін. Який статус?',o:['Verified by agent','Needs human judgment','Failed'],a:1,w:'Візуальне і суб\'єктивне агент не підтверджує. Він лише доводить людину до моменту оцінки швидше.'},
+  {q:'Тест у CI впав з 422 від API і так само вчора. Що робить playwright-fix-test?',o:['Міняє очікуваний статус на 422','Класифікує як проблему бекенду і зупиняється','Додає retries: 5'],a:1,w:'Це не баг тесту. Послабити перевірку означало б сховати реальну проблему.'},
+  {q:'Чекліст щоразу містить зайвий розділ, який вам не потрібен. Що краще?',o:['Видаляти його руками кожного разу','Додати правило в SKILL.md','Перейти на іншу модель'],a:1,w:'Скіл це живий документ. Одне правило виправляє всі наступні результати.'},
+];
+let score=0;
+quiz.forEach((it,qi)=>{
+  const d=document.createElement('div');d.className='q';
+  d.innerHTML='<b>'+(qi+1)+'. '+it.q+'</b><div class="opts"></div><div class="why"></div>';
+  const opts=d.querySelector('.opts');
+  it.o.forEach((o,oi)=>{const b=document.createElement('button');b.className='btn';b.textContent=o;
+    b.onclick=()=>{if(d.dataset.done)return;d.dataset.done=1;
+      if(oi===it.a){score++;b.classList.add('right')}else{b.classList.add('wrong');opts.children[it.a].classList.add('right')}
+      d.querySelector('.why').textContent=it.w;$('score').textContent=score+' / '+quiz.length};
+    opts.appendChild(b)});
+  $('quiz').appendChild(d);
+});
+
+go((parseInt(location.hash.slice(1))||1)-1);
+</script>
+</body>
+</html>
